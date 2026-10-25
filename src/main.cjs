@@ -10,6 +10,7 @@ const { IconService } = require('./icons.cjs');
 const { HtmlBackup } = require('./html-backup.cjs');
 const { MAX_HTML_BYTES, parseBookmarks } = require('./bookmark-html.cjs');
 const { UpdateService, RELEASES } = require('./updates.cjs');
+const { updateFetch } = require('./update-transport.cjs');
 const { spawn } = require('node:child_process');
 app.setName('Arcwell');
 const testMode = process.argv.includes('--arcwell-test');
@@ -85,7 +86,7 @@ else {
       updates = new UpdateService({
         currentVersion: app.getVersion(),
         directory: path.join(app.getPath('userData'), 'cache', 'updates'),
-        fetch: (url, options) => net.fetch(url, options),
+        fetch: updateFetch(net),
         publicKey: await fs.readFile(path.join(__dirname, 'update-public.pem'), 'utf8'),
       });
       window = new BrowserWindow({

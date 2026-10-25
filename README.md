@@ -10,7 +10,7 @@
 
 前往 [Releases](https://github.com/Tkxyz1122/Arcwell/releases/latest)。首次安装选择 **Setup.exe**；已经安装选择 **Update.exe**，在原目录更新，无需先卸载。安装器会将程序放入独立的 Arcwell 文件夹，支持自选位置。
 
-**0.4.0 及更早版本需先手动更新一次到 0.5.0。** 之后在左下角齿轮 → 应用更新中检查新版本、下载并启动更新器。版本相同时显示已是最新，后续更高版本发布后才出现下载按钮。
+**0.5.0 及更早版本需先手动更新一次到 0.5.1。** 之后在左下角齿轮 → 应用更新中检查新版本、下载并启动更新器。版本相同时显示已是最新，后续更高版本发布后才出现下载按钮。
 
 目标平台为 Windows 11 x64。运行不需要安装 Node.js、Python 或 .NET。应用 EXE 暂无 Windows Authenticode 代码签名；应用内更新另行使用 Ed25519 发布签名与 SHA-256 完整性校验。ARM64、干净系统安装和各 DPI 组合尚未完整验证。
 
@@ -72,7 +72,7 @@ npm run format:check
 npm run build
 ```
 
-产物位于 `release/0.5.0`。免安装运行需保留完整 `win-unpacked`。构建先生成 Setup.exe，再生成 Update.exe。依赖不提交到 Git，由 npm ci 根据锁文件恢复。已有项目内 .tools/node.exe 的维护者也可使用本地构建脚本。
+产物位于 `release/0.5.1`。免安装运行需保留完整 `win-unpacked`。构建先生成 Setup.exe，再生成 Update.exe。依赖不提交到 Git，由 npm ci 根据锁文件恢复。已有项目内 .tools/node.exe 的维护者也可使用本地构建脚本。
 
 界面测试：`npm run test:ui`、`npm run test:import`、`node scripts/release-ui-test.cjs`，均使用隔离数据。原生更新器测试需指定只读旧版基线，见 [更新与发布](docs/UPDATING.md)。
 

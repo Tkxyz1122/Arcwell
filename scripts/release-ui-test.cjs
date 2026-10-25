@@ -128,10 +128,10 @@ const root = path.resolve(__dirname, '..');
     // The test-mode IPC emits an event instead of executing any downloaded file.
     const keys = generateKeyPairSync('ed25519');
     const binary = Buffer.from('not an executable - test never launches this');
-    const filename = 'Arcwell-0.5.1-Update.exe';
+    const filename = 'Arcwell-0.5.2-Update.exe';
     const manifest = {
       repository: 'Tkxyz1122/Arcwell',
-      version: '0.5.1',
+      version: '0.5.2',
       filename,
       size: binary.length,
       sha256: createHash('sha256').update(binary).digest('hex'),
@@ -153,7 +153,7 @@ const root = path.resolve(__dirname, '..');
             if (url.endsWith('/latest'))
               return new Response(
                 JSON.stringify({
-                  tag_name: 'v0.5.1',
+                  tag_name: 'v0.5.2',
                   draft: false,
                   prerelease: false,
                   assets: [
@@ -161,12 +161,12 @@ const root = path.resolve(__dirname, '..');
                       name: 'update.json',
                       size: fixture.envelope.length,
                       browser_download_url:
-                        'https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/update.json',
+                        'https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.2/update.json',
                     },
                     {
                       name: fixture.filename,
                       size: fixture.size,
-                      browser_download_url: `https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/${fixture.filename}`,
+                      browser_download_url: `https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.2/${fixture.filename}`,
                     },
                   ],
                 }),
