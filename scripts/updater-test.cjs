@@ -218,7 +218,13 @@ async function openApp(target, data) {
         );
         await page.evaluate(() => window.arcwell.window('close')).catch(() => {});
       } finally {
-        if (browser) await browser.close().catch(() => {});
+        if (browser) {
+          for (const page of browser.contexts().flatMap((context) => context.pages())) {
+            await page.evaluate(() => window.arcwell?.window('close')).catch(() => {});
+            await page.close().catch(() => {});
+          }
+          await browser.close().catch(() => {});
+        }
       }
       await fs.unlink(portFile).catch((error) => {
         if (error.code !== 'ENOENT') throw error;
