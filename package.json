@@ -1,0 +1,65 @@
+{
+  "name": "arcwell",
+  "version": "0.5.0",
+  "description": "Arcwell — a quiet home for your bookmarks",
+  "author": "Arcwell",
+  "license": "UNLICENSED",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/*.test.cjs",
+    "test:ui": "node scripts/ui-test.cjs",
+    "check": "node scripts/check.cjs",
+    "format": "prettier --write src scripts tests package.json .prettierrc.json",
+    "format:check": "prettier --check src scripts tests package.json .prettierrc.json",
+    "build": "electron-builder --win nsis --x64 && node scripts/build-updater.cjs",
+    "build:updater": "node scripts/build-updater.cjs",
+    "test:update": "node scripts/updater-test.cjs",
+    "test:import": "node scripts/import-test.cjs",
+    "release:manifest": "node scripts/release-manifest.cjs"
+  },
+  "build": {
+    "electronDist": "node_modules/electron/dist",
+    "appId": "app.arcwell.desktop",
+    "productName": "Arcwell",
+    "directories": {
+      "output": "release/0.5.0"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico",
+      "signAndEditExecutable": true
+    },
+    "nsis": {
+      "include": "build/installer.nsh",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "Arcwell-${version}-Setup.exe"
+    }
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3",
+    "playwright": "1.64.0",
+    "prettier": "3.9.10"
+  },
+  "dependencies": {
+    "htmlparser2": "12.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tkxyz1122/Arcwell.git"
+  },
+  "homepage": "https://github.com/Tkxyz1122/Arcwell",
+  "bugs": {
+    "url": "https://github.com/Tkxyz1122/Arcwell/issues"
+  }
+}
