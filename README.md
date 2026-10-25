@@ -3,9 +3,9 @@
 <p align="center"><img src="assets/icon.svg" width="64" alt="Arcwell" /></p>
 <p align="center"><strong>A quiet home for your bookmarks.</strong><br />一个简洁安静的 Windows 网页收藏器。</p>
 <p align="center">
-<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/Arcwell-0.5.1-Setup.exe"><img src="docs/images/download-setup.svg" alt="下载安装版" /></a>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/Arcwell-0.5.1-Setup.exe"><img src="docs/images/download-setup.svg?v=compact" alt="下载安装版" /></a>
 &nbsp;
-<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/Arcwell-0.5.1-Portable.zip"><img src="docs/images/download-portable.svg" alt="下载便携版 ZIP" /></a>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/Arcwell-0.5.1-Portable.zip"><img src="docs/images/download-portable.svg?v=compact" alt="下载便携版 ZIP" /></a>
 </p>
 <p align="center">Windows 11 · x64</p>
 
