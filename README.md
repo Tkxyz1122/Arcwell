@@ -3,11 +3,11 @@
 <p align="center"><img src="assets/icon.svg" width="64" alt="Arcwell" /></p>
 <p align="center"><strong>A quiet home for your bookmarks.</strong><br />把常用网站、工作资料和灵感网页，整理成自己的桌面收藏库。</p>
 <p align="center">
-<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/Arcwell-0.5.1-Setup.exe"><img src="docs/images/download-setup.svg?v=compact" alt="下载安装版" /></a>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.2/Arcwell-0.5.2-Setup.exe"><img src="docs/images/download-setup.svg?v=compact" alt="下载安装版" /></a>
 &nbsp;
-<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/Arcwell-0.5.1-Portable.zip"><img src="docs/images/download-portable.svg?v=compact" alt="下载便携版 ZIP" /></a>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.2/Arcwell-0.5.2-Portable.zip"><img src="docs/images/download-portable.svg?v=compact" alt="下载便携版 ZIP" /></a>
 </p>
-<p align="center">Windows 11 · x64 · 当前版本 0.5.1</p>
+<p align="center">Windows 11 · x64 · 当前版本 0.5.2</p>
 
 ## Arcwell 是什么
 
@@ -38,7 +38,7 @@ Arcwell 是一款本地优先的 Windows 桌面网页收藏管理工具。你可
 
 ### 安装版（推荐）
 
-[下载安装程序 · Arcwell 0.5.1 Setup.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/Arcwell-0.5.1-Setup.exe)
+[下载安装程序 · Arcwell 0.5.2 Setup.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.2/Arcwell-0.5.2-Setup.exe)
 
 下载的是 **EXE 安装程序，无需手动解压**。双击后按向导选择位置并完成安装。程序会放入独立的 Arcwell 文件夹，避免文件散落在目标目录。
 
@@ -46,7 +46,7 @@ Arcwell 是一款本地优先的 Windows 桌面网页收藏管理工具。你可
 
 ### 便携版（可选）
 
-[下载便携版 · Arcwell 0.5.1 Portable.zip](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/Arcwell-0.5.1-Portable.zip)
+[下载便携版 · Arcwell 0.5.2 Portable.zip](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.2/Arcwell-0.5.2-Portable.zip)
 
 解压后打开其中的 **Arcwell** 文件夹，双击 **Arcwell.exe**。请保留完整文件夹，移动程序时一起移动。
 
@@ -104,6 +104,12 @@ Arcwell 在保存收藏修改后，同步更新两份固定名称的 **网址备
 
 ![设置：双份 HTML 备份与检查更新](docs/images/settings.png)
 
+### 卸载时的数据选择
+
+从 Windows“已安装的应用”卸载 Arcwell 时，会询问是否同时删除本地数据，**默认选择保留**。选择删除后还需确认具体路径，收藏、分类、备注、星标、设置、缓存和应用目录的 HTML 备份会移入回收站；自选目录中的备份和手动导出文件继续保留。
+
+选择保留时，完整收藏库仍在 `%APPDATA%/Arcwell`，程序目录中的 HTML 会先另存到该目录的 `uninstall-backups` 文件夹，重新安装后可继续使用原收藏。取消会停止卸载；静默卸载与安装升级始终保留数据。旧版用户通过应用内更新至 0.5.2 后，卸载器也会同步获得这一选项。
+
 ## 应用更新
 
 日常更新直接在应用内完成：
@@ -120,7 +126,7 @@ Arcwell 在保存收藏修改后，同步更新两份固定名称的 **网址备
 
 首次从旧版升级，或无法使用应用内更新时，可手动下载更新程序：
 
-[下载 Arcwell 0.5.1 更新程序 · Update.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/Arcwell-0.5.1-Update.exe)
+[下载 Arcwell 0.5.2 更新程序 · Update.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.2/Arcwell-0.5.2-Update.exe)
 
 先保存正在编辑的内容，再运行更新程序，按向导确认原来包含 Arcwell.exe 的程序目录并完成更新。**无需先卸载旧版。** 后续可继续通过应用内“检查更新”更新。
 
@@ -168,7 +174,7 @@ npm run build
 
 技术栈为 Electron、原生 HTML / CSS / JavaScript、htmlparser2 与 electron-builder。渲染器使用沙箱，文件保存、导入、备份、默认浏览器调用与更新下载由主进程负责。代码按界面、业务规则、存储、备份、图标和更新模块拆分。
 
-`npm run build` 生成安装程序、更新程序及便携 ZIP，产物位于 `release/0.5.1`。更详细的开发结构、数据恢复和发布流程见：
+`npm run build` 生成安装程序、更新程序及便携 ZIP，产物位于 `release/0.5.2`。更详细的开发结构、数据恢复和发布流程见：
 
 - [开发与数据说明](docs/DEVELOPMENT.md)
 - [更新与发布](docs/UPDATING.md)

@@ -7,6 +7,18 @@ const { UUID } = require('builder-util-runtime');
 const root = path.resolve(__dirname, '..');
 const pkg = require('../package.json');
 const output = path.join(root, pkg.build.directories.output);
+const uninstaller = path.join(
+  root,
+  'test-results',
+  `uninstaller-${pkg.version}`,
+  'Uninstall Arcwell.exe',
+);
+async function captureUninstaller(file) {
+  const expected = path.join(output, `Arcwell-${pkg.version}-Setup.__uninstaller.exe`);
+  if (path.resolve(file) !== expected) throw new Error('卸载器捕获路径无效。');
+  await fs.mkdir(path.dirname(uninstaller), { recursive: true });
+  await fs.copyFile(file, uninstaller);
+}
 async function compiler() {
   const cache =
     process.env.ELECTRON_BUILDER_CACHE ||
@@ -42,6 +54,9 @@ async function buildUpdater({ testFailure = false } = {}) {
   allowed.add('LICENSE.electron.txt');
   if (names.some((name) => !allowed.has(name)))
     throw new Error('程序目录包含运行时之外的文件，拒绝把用户文件打进更新包。');
+  await fs.access(uninstaller).catch(() => {
+    throw new Error('缺少当前版本卸载器，请先构建安装包。');
+  });
   if (testFailure) {
     // Exercise the identical native replacement/rollback logic with a tiny
     // non-runnable payload. Never distribute this deliberately failing EXE.
@@ -63,6 +78,9 @@ async function buildUpdater({ testFailure = false } = {}) {
     [
       '!macro ArcwellEntries ACTION',
       ...names.sort().map((name) => `  !insertmacro \${ACTION} "${name}"`),
+      '  ${If} $replaceUninstaller == 1',
+      '    !insertmacro ${ACTION} "Uninstall Arcwell.exe"',
+      '  ${EndIf}',
       '!macroend',
       '',
     ].join('\n'),
@@ -85,6 +103,7 @@ async function buildUpdater({ testFailure = false } = {}) {
     `/DPAYLOAD=${payload}`,
     `/DMANIFEST=${manifest}`,
     `/DOUTPUT=${target}`,
+    `/DUNINSTALLER=${uninstaller}`,
   ];
   if (testFailure) args.push('/DARCWELL_TEST_FAIL_AFTER=3');
   args.push(path.join(root, 'build', 'updater.nsi'));
@@ -95,7 +114,10 @@ async function buildUpdater({ testFailure = false } = {}) {
 }
 module.exports = { buildUpdater, compiler };
 if (require.main === module)
-  buildUpdater({ testFailure: process.argv.includes('--test-failure') }).catch((error) => {
+  (process.argv.includes('--capture-uninstaller')
+    ? captureUninstaller(process.argv[process.argv.indexOf('--capture-uninstaller') + 1])
+    : buildUpdater({ testFailure: process.argv.includes('--test-failure') })
+  ).catch((error) => {
     console.error(error);
     process.exitCode = 1;
   });

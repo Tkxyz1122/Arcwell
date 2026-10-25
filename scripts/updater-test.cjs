@@ -117,7 +117,6 @@ async function openApp(target, data) {
       path.join(data, 'backup-settings.json'),
       path.join(custom, '网址备份.html'),
       path.join(target, '网址备份.html'),
-      path.join(target, 'Uninstall Arcwell.exe'),
       path.join(target, '原快捷方式.lnk'),
     ];
     const before = await Promise.all(preserved.map(hash));
@@ -131,10 +130,16 @@ async function openApp(target, data) {
     const verifyProgram = async () => {
       for (const [name, content] of Object.entries(expected))
         assert.equal(await hash(path.join(target, name)), content, name);
+      assert.equal(
+        await hash(path.join(target, 'Uninstall Arcwell.exe')),
+        await hash(
+          path.join(root, 'test-results', `uninstaller-${pkg.version}`, 'Uninstall Arcwell.exe'),
+        ),
+      );
     };
     await verifyProgram();
     checks.push(
-      'previous running copy updated in place; normal close; all payload hashes match; library/settings/HTML/shortcut/uninstaller preserved',
+      'previous running copy updated in place; normal close; payload and new uninstaller hashes match; library/settings/HTML/shortcuts preserved',
     );
     app = await openApp(target, data);
     const loaded = await (await app.firstWindow()).evaluate(() => window.arcwell.load());
@@ -154,6 +159,11 @@ async function openApp(target, data) {
     assert.deepEqual(await Promise.all(preserved.map(hash)), afterReopen);
     await verifyProgram();
     checks.push('same-version reapply is idempotent');
+    const portableTarget = path.join(directory, 'portable', 'Arcwell');
+    await fs.cp(oldPayload, portableTarget, { recursive: true });
+    assert.equal(await run(updater, ['/S', `/D=${portableTarget}`]), 0);
+    await assert.rejects(fs.access(path.join(portableTarget, 'Uninstall Arcwell.exe')));
+    checks.push('portable update does not create an uninstaller for an unregistered copy');
     await fs.cp(oldPayload, target, { recursive: true });
     const oldFiles = await inventory(target);
     const failingUpdater = await buildUpdater({ testFailure: true });

@@ -1,6 +1,6 @@
 {
   "name": "arcwell",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Arcwell — a quiet home for your bookmarks",
   "author": "Arcwell",
   "license": "UNLICENSED",
@@ -15,6 +15,7 @@
     "build": "electron-builder --win nsis --x64 && node scripts/build-updater.cjs && node scripts/build-portable.cjs",
     "build:updater": "node scripts/build-updater.cjs",
     "test:update": "node scripts/updater-test.cjs",
+    "test:uninstall": "node scripts/uninstall-test.cjs",
     "test:import": "node scripts/import-test.cjs",
     "release:manifest": "node scripts/release-manifest.cjs",
     "build:portable": "node scripts/build-portable.cjs"
@@ -24,7 +25,7 @@
     "appId": "app.arcwell.desktop",
     "productName": "Arcwell",
     "directories": {
-      "output": "release/0.5.1"
+      "output": "release/0.5.2"
     },
     "files": [
       "src/**/*",

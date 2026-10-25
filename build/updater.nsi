@@ -19,6 +19,7 @@ Var mutex
 Var entryCount
 Var updateActive
 Var testRoot
+Var replaceUninstaller
 !macro Trace TEXT
   !ifdef ARCWELL_TRACE_LOG
     FileOpen $9 "${ARCWELL_TRACE_LOG}" a
@@ -230,6 +231,10 @@ FunctionEnd
 Section "更新 Arcwell"
   !insertmacro Trace "section"
   Call VerifyDirectory
+  StrCpy $replaceUninstaller 0
+  ${If} ${FileExists} "$INSTDIR\Uninstall Arcwell.exe"
+    StrCpy $replaceUninstaller 1
+  ${EndIf}
   StrCpy $updateActive 1
   StrCpy $stage "$INSTDIR\.arcwell-update-${VERSION}"
   ${If} ${FileExists} "$stage"
@@ -250,6 +255,7 @@ Section "更新 Arcwell"
   SetOutPath "$stage\new"
   ClearErrors
   File /r "${PAYLOAD}\*.*"
+  File "/oname=Uninstall Arcwell.exe" "${UNINSTALLER}"
   ${If} ${Errors}
     SetOutPath $TEMP
     RMDir /r "$stage"

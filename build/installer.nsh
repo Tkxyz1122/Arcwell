@@ -1,5 +1,14 @@
 !include "FileFunc.nsh"
 
+!ifdef BUILD_UNINSTALLER
+  !include "${BUILD_RESOURCES_DIR}\uninstall-data.nsh"
+!else
+  !ifdef UNINSTALLER_OUT_FILE
+    ; Keep the exact compiled uninstaller for the in-app update package.
+    !system 'node "${PROJECT_DIR}\scripts\build-updater.cjs" --capture-uninstaller "${UNINSTALLER_OUT_FILE}"' = 0
+  !endif
+!endif
+
 !ifndef BUILD_UNINSTALLER
   Function ArcwellNormalizeInstallDirectory
     Push $0

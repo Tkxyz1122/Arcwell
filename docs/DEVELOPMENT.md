@@ -14,7 +14,9 @@
 
 HTML 是标准浏览器书签文件，**不包含应用备注和星标**。完整迁移请先关闭应用，再备份整个 data 目录；HTML 可通过导入按钮恢复分类和链接。两份 HTML 为当前库的同步副本，覆盖导入后也会更新，不能代替历史归档。备份目录不可写时会提示，JSON 收藏仍可保存。
 
-JSON 使用队列与原子替换保存，外部改动时拒绝覆盖，损坏时尝试恢复 .bak 并保留原件。卸载保留用户数据。更新器只替换程序文件，保留收藏、备份设置与快捷方式。
+JSON 使用队列与原子替换保存，外部改动时拒绝覆盖，损坏时尝试恢复 .bak 并保留原件。卸载默认保留用户数据，也可在两次确认后将当前用户的 `%APPDATA%/Arcwell` 和程序目录的 `网址备份.html` 移入回收站。自定义备份与手动导出文件不删除；保留数据时程序目录的 HTML 先保存到 `%APPDATA%/Arcwell/uninstall-backups`，失败则停止卸载。静默卸载和安装升级始终保留数据。
+
+更新器替换程序文件及已安装副本的卸载器，保留收藏、备份设置与快捷方式；便携副本不创建卸载器。卸载数据处理失败会停止卸载，不回退为永久删除。运行 `npm run test:uninstall` 可在项目隔离目录验证数据处理及原生确认对话框，不操作真实收藏目录。
 
 ## 从源码开发
 
@@ -34,7 +36,7 @@ npm run format:check
 npm run build
 ```
 
-产物位于 `release/0.5.1`：Setup.exe 是安装向导，Portable.zip 是可选的便携版；Update.exe 供应用内更新及手动更新备用。便携运行需保留完整 Arcwell 文件夹。依赖由 npm ci 根据锁文件恢复。
+产物位于 `release/0.5.2`：Setup.exe 是安装向导，Portable.zip 是可选的便携版；Update.exe 供应用内更新及手动更新备用。便携运行需保留完整 Arcwell 文件夹。依赖由 npm ci 根据锁文件恢复。
 
 界面测试：`npm run test:ui`、`npm run test:import`、`node scripts/release-ui-test.cjs`，均使用隔离数据。原生更新器测试需指定只读旧版基线，见 [更新与发布](UPDATING.md)。
 
