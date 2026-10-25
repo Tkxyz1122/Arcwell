@@ -26,6 +26,11 @@ contextBridge.exposeInMainWorld(
     cancelUpdate: () => invoke('update-cancel'),
     installUpdate: () => invoke('update-install'),
     updateReleases: () => invoke('update-releases'),
+    onUpdateResult: (callback) => {
+      const listener = (_event, result) => callback(result);
+      ipcRenderer.on('arcwell-update-result', listener);
+      return () => ipcRenderer.removeListener('arcwell-update-result', listener);
+    },
     window: (action) => invoke('window', { action }),
   }),
 );

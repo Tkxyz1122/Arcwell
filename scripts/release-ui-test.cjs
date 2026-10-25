@@ -13,7 +13,7 @@ const root = path.resolve(__dirname, '..');
     args: ['--arcwell-test'],
     env: { ...process.env, ARCWELL_TEST_DATA: directory },
   });
-  const screenshots = path.join(root, 'docs', 'images');
+  const screenshots = path.join(directory, 'screenshots');
   await fs.mkdir(screenshots, { recursive: true });
   try {
     const page = await application.firstWindow();
@@ -24,7 +24,10 @@ const root = path.resolve(__dirname, '..');
       globalThis.openCount = 0;
       globalThis.installCount = 0;
       app.on('arcwell-test-open', () => globalThis.openCount++);
-      app.on('arcwell-test-update', () => globalThis.installCount++);
+      app.on('arcwell-test-update', (value) => {
+        globalThis.installCount++;
+        globalThis.lastInstall = value;
+      });
     });
     await page.evaluate(async () => {
       const api = window.arcwell;
@@ -128,10 +131,10 @@ const root = path.resolve(__dirname, '..');
     // The test-mode IPC emits an event instead of executing any downloaded file.
     const keys = generateKeyPairSync('ed25519');
     const binary = Buffer.from('not an executable - test never launches this');
-    const filename = 'Arcwell-0.5.2-Update.exe';
+    const filename = 'Arcwell-9.0.0-Update.exe';
     const manifest = {
       repository: 'Tkxyz1122/Arcwell',
-      version: '0.5.2',
+      version: '9.0.0',
       filename,
       size: binary.length,
       sha256: createHash('sha256').update(binary).digest('hex'),
@@ -153,7 +156,7 @@ const root = path.resolve(__dirname, '..');
             if (url.endsWith('/latest'))
               return new Response(
                 JSON.stringify({
-                  tag_name: 'v0.5.2',
+                  tag_name: 'v9.0.0',
                   draft: false,
                   prerelease: false,
                   assets: [
@@ -161,12 +164,12 @@ const root = path.resolve(__dirname, '..');
                       name: 'update.json',
                       size: fixture.envelope.length,
                       browser_download_url:
-                        'https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.2/update.json',
+                        'https://github.com/Tkxyz1122/Arcwell/releases/download/v9.0.0/update.json',
                     },
                     {
                       name: fixture.filename,
                       size: fixture.size,
-                      browser_download_url: `https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.2/${fixture.filename}`,
+                      browser_download_url: `https://github.com/Tkxyz1122/Arcwell/releases/download/v9.0.0/${fixture.filename}`,
                     },
                   ],
                 }),
@@ -179,8 +182,11 @@ const root = path.resolve(__dirname, '..');
           };
           return originalCheck.call(this);
         };
-        globalThis.updateAnswer = 0;
-        dialog.showMessageBox = async () => ({ response: globalThis.updateAnswer });
+        globalThis.nativeConfirmations = 0;
+        dialog.showMessageBox = async () => {
+          globalThis.nativeConfirmations++;
+          throw new Error('An update must not open a native confirmation.');
+        };
       },
       {
         key: keys.publicKey.export({ type: 'spki', format: 'pem' }),
@@ -196,21 +202,45 @@ const root = path.resolve(__dirname, '..');
     await page.waitForSelector('#install-update:not([hidden])');
     await page.click('#install-update');
     await page.waitForFunction(() => !document.querySelector('#install-update').disabled);
-    assert.equal(await application.evaluate(() => globalThis.installCount), 0);
-    await application.evaluate(() => {
-      globalThis.updateAnswer = 1;
-    });
-    await page.click('#install-update');
-    await page.waitForFunction(() => !document.querySelector('#install-update').disabled);
     assert.equal(await application.evaluate(() => globalThis.installCount), 1);
+    assert.equal(await application.evaluate(() => globalThis.nativeConfirmations), 0);
+    const launch = await application.evaluate(() => globalThis.lastInstall);
+    assert.equal(launch.silent, true);
+    assert.equal(launch.target, path.join(root, pkg.build.directories.output, 'win-unpacked'));
+    assert.equal(await page.locator('#update-feedback-title').textContent(), '正在更新');
+    await application.evaluate(({ app }) =>
+      app.emit('second-instance', {}, [
+        'Arcwell.exe',
+        '--arcwell-update-result=failed',
+        '--arcwell-update-version=9.0.0',
+      ]),
+    );
+    await page.waitForFunction(
+      () => document.querySelector('#update-feedback-title').textContent === '更新失败',
+    );
+    await page.screenshot({ path: path.join(directory, 'update-failed.png') });
+    await page.click('#update-feedback-done');
+    await application.evaluate(({ app }) =>
+      app.emit('second-instance', {}, [
+        'Arcwell.exe',
+        '--arcwell-update-result=success',
+        '--arcwell-update-version=' + app.getVersion(),
+      ]),
+    );
+    await page.waitForFunction(
+      () => document.querySelector('#update-feedback-title').textContent === '更新成功',
+    );
+    await page.screenshot({ path: path.join(directory, 'update-success.png') });
+    await page.click('#update-feedback-done');
     await page.click('#modal-submit');
     await page.fill('#detail-note', '未保存内容');
     await page.click('#settings');
     await page.click('#install-update');
     await page.waitForFunction(() =>
-      document.querySelector('#modal-error').textContent.includes('先保存'),
+      document.querySelector('#update-feedback-message').textContent.includes('先保存'),
     );
     assert.equal(await application.evaluate(() => globalThis.installCount), 1);
+    await page.click('#update-feedback-done');
     await page.click('#modal-submit');
     await page.locator('#detail-form button[type=submit]').click();
     await page.waitForFunction(
@@ -225,7 +255,7 @@ const root = path.resolve(__dirname, '..');
     );
     assert.deepEqual(errors, []);
     console.log(
-      'Release UI passed: footer import, startup collapse, hover, single click, protected controls, signed update download, installation confirmation/cancel, draft protection. Demo screenshots saved.',
+      'Release UI passed: footer import, startup collapse, hover, single click, protected controls, signed download, original-path silent launch without native confirmation, styled success/failure dialogs and draft protection.',
     );
   } finally {
     await application.close();

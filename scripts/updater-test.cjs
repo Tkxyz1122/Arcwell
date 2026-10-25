@@ -5,7 +5,7 @@ const os = require('node:os');
 const crypto = require('node:crypto');
 const assert = require('node:assert/strict');
 const { spawn, spawnSync } = require('node:child_process');
-const { _electron } = require('playwright');
+const { _electron, chromium } = require('playwright');
 const { buildUpdater, compiler } = require('./build-updater.cjs');
 const root = path.resolve(__dirname, '..');
 const pkg = require('../package.json');
@@ -29,11 +29,11 @@ async function inventory(directory, prefix = '') {
   }
   return files;
 }
-function run(exe, args = []) {
+function run(exe, args = [], environment = {}) {
   return new Promise((resolve, reject) => {
     assert.ok(testRoot && testRoot.startsWith(path.join(root, 'test-results') + path.sep));
     const child = spawn(exe, args, {
-      env: { ...process.env, ARCWELL_UPDATE_TEST_ROOT: testRoot },
+      env: { ...process.env, ...environment, ARCWELL_UPDATE_TEST_ROOT: testRoot },
       windowsVerbatimArguments: true,
       windowsHide: true,
       stdio: 'ignore',
@@ -164,6 +164,14 @@ async function openApp(target, data) {
     assert.equal(await run(updater, ['/S', `/D=${portableTarget}`]), 0);
     await assert.rejects(fs.access(path.join(portableTarget, 'Uninstall Arcwell.exe')));
     checks.push('portable update does not create an uninstaller for an unregistered copy');
+    const adjacentUpdater = path.join(portableTarget, path.basename(updater));
+    await fs.copyFile(updater, adjacentUpdater);
+    assert.equal(await run(adjacentUpdater, ['/S']), 0);
+    for (const [name, content] of Object.entries(expected))
+      assert.equal(await hash(path.join(portableTarget, name)), content, name);
+    checks.push(
+      'manual updater beside the app detects its original directory without /D or a directory picker',
+    );
     await fs.cp(oldPayload, target, { recursive: true });
     const oldFiles = await inventory(target);
     const failingUpdater = await buildUpdater({ testFailure: true });
@@ -171,6 +179,60 @@ async function openApp(target, data) {
     assert.deepEqual(await inventory(target), oldFiles);
     checks.push(
       'injected failure after three replacements restores every original program and user file',
+    );
+    const resumeTarget = path.join(directory, 'auto-resume', 'Arcwell');
+    const resumeData = path.join(directory, 'auto-resume-data');
+    await fs.mkdir(resumeData, { recursive: true });
+    await fs.cp(oldPayload, resumeTarget, { recursive: true });
+    const resumeEnvironment = { ARCWELL_UPDATE_TEST_REPORT: '1', ARCWELL_TEST_DATA: resumeData };
+    const inspectResult = async (expectedTitle) => {
+      const portFile = path.join(resumeData, 'DevToolsActivePort');
+      let browser;
+      try {
+        let port;
+        for (let i = 0; i < 200; i++) {
+          port = await fs.readFile(portFile, 'utf8').then(
+            (text) => text.split(/\r?\n/)[0],
+            () => null,
+          );
+          if (port) break;
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        assert.match(port || '', /^\d+$/);
+        browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
+        let page;
+        for (let i = 0; i < 100; i++) {
+          page = browser
+            .contexts()
+            .flatMap((context) => context.pages())
+            .find((page) => page.url().endsWith('/ui/index.html'));
+          if (page) break;
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        assert.ok(page, 'auto-restarted application window');
+        await page.waitForSelector('#update-feedback[open]');
+        assert.equal(await page.locator('#update-feedback-title').textContent(), expectedTitle);
+        assert.ok(
+          !(await fs.readdir(resumeData)).includes('update-result.json'),
+          'receipt is consumed once',
+        );
+        await page.evaluate(() => window.arcwell.window('close')).catch(() => {});
+      } finally {
+        if (browser) await browser.close().catch(() => {});
+      }
+      await fs.unlink(portFile).catch((error) => {
+        if (error.code !== 'ENOENT') throw error;
+      });
+    };
+    assert.equal(await run(updater, [`/D=${resumeTarget}`], resumeEnvironment), 0);
+    await inspectResult('更新成功');
+    checks.push(
+      'silent default update restarts the original-path application with a styled success dialog',
+    );
+    assert.notEqual(await run(failingUpdater, [`/D=${resumeTarget}`], resumeEnvironment), 0);
+    await inspectResult('更新失败');
+    checks.push(
+      'native replacement failure rolls back, restarts the app and shows a styled failure dialog',
     );
     const nsis = await compiler();
     const lockSource = path.join(directory, 'lock.nsi');

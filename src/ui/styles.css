@@ -930,6 +930,13 @@ dialog::backdrop {
   flex-direction: column;
   gap: 14px;
 }
+.update-feedback-message {
+  margin: 0;
+  font-size: var(--body);
+  color: var(--muted);
+  line-height: 1.8;
+  white-space: pre-line;
+}
 #modal-content p {
   margin: 0;
   font-size: 13px;

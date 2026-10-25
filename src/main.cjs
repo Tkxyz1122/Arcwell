@@ -12,6 +12,7 @@ const { MAX_HTML_BYTES, parseBookmarks } = require('./bookmark-html.cjs');
 const { UpdateService, RELEASES } = require('./updates.cjs');
 const { updateFetch } = require('./update-transport.cjs');
 const { spawn } = require('node:child_process');
+const { resultFromArguments, takeUpdateResult } = require('./update-result.cjs');
 app.setName('Arcwell');
 const testMode = process.argv.includes('--arcwell-test');
 if (testMode) app.setPath('userData', path.resolve(process.env.ARCWELL_TEST_DATA));
@@ -23,12 +24,29 @@ let window,
   installingUpdate = false,
   closing = false,
   hasDraft = false;
+let pendingUpdateResult = null;
+let lastUpdateResultKey = null;
+function deliverUpdateResult(result) {
+  if (!result) return;
+  const key = `${result.status}:${result.version}`;
+  if (key === lastUpdateResultKey) return;
+  lastUpdateResultKey = key;
+  pendingUpdateResult = result;
+  if (window && !window.isDestroyed() && !window.webContents.isLoadingMainFrame()) {
+    window.webContents.send('arcwell-update-result', result);
+    pendingUpdateResult = null;
+  }
+}
 const entry = path.join(__dirname, 'ui', 'index.html');
 const entryUrl = pathToFileURL(entry).href;
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
-  app.on('second-instance', () => {
-    if (window) {
+  app.on('second-instance', (_event, args) => {
+    const result = resultFromArguments(args, app.getVersion());
+    if (result) {
+      takeUpdateResult(app.getPath('userData'), args, app.getVersion()).then(deliverUpdateResult);
+    }
+    if (window && !testMode) {
       if (window.isMinimized()) window.restore();
       window.show();
       window.focus();
@@ -37,6 +55,11 @@ else {
   app
     .whenReady()
     .then(async () => {
+      pendingUpdateResult = await takeUpdateResult(
+        app.getPath('userData'),
+        process.argv,
+        app.getVersion(),
+      );
       store = new LibraryStore(path.join(app.getPath('userData'), 'data'));
       icons = new IconService(
         path.join(app.getPath('userData'), 'cache', 'icons'),
@@ -151,33 +174,19 @@ else {
                 throw new Error('请在 Windows x64 安装版中更新。');
               if (hasDraft) throw new Error('请先保存或放弃正在编辑的内容，再安装更新。');
               installingUpdate = true;
+              lastUpdateResultKey = null;
               try {
                 const file = await updates.installFile();
-                const answer = await dialog.showMessageBox(window, {
-                  type: 'question',
-                  title: '安装 Arcwell 更新',
-                  message: `启动 ${updates.status().version} 更新器？`,
-                  detail:
-                    '更新器会在你确认后正常关闭应用，在当前程序目录更新，保留收藏、备份设置和快捷方式。请完成更新向导。',
-                  buttons: ['取消', '启动更新器'],
-                  defaultId: 0,
-                  cancelId: 0,
-                  noLink: true,
-                });
-                if (answer.response !== 1) {
-                  value = false;
-                  break;
-                }
                 await store.queue;
                 await backups.queue;
                 await updates.installFile();
                 const target = path.dirname(app.getPath('exe'));
-                if (testMode) app.emit('arcwell-test-update', { file, target });
+                if (testMode) app.emit('arcwell-test-update', { file, target, silent: true });
                 else
                   await new Promise((resolve, reject) => {
                     // NSIS /D must be the final, unquoted argument; it consumes
                     // the rest of the raw command line, including spaces.
-                    const child = spawn(file, [`/D=${target}`], {
+                    const child = spawn(file, ['/S', `/D=${target}`], {
                       detached: true,
                       stdio: 'ignore',
                       cwd: path.dirname(file),
@@ -185,6 +194,13 @@ else {
                       windowsVerbatimArguments: true,
                     });
                     child.once('error', reject);
+                    child.once('exit', (code) => {
+                      if (code !== 0 && window && !window.isDestroyed() && !closing)
+                        deliverUpdateResult({
+                          status: code === 4 ? 'rollback-failed' : 'failed',
+                          version: updates.status().version,
+                        });
+                    });
                     child.once('spawn', () => {
                       child.unref();
                       resolve();
@@ -201,7 +217,9 @@ else {
                 library: store.snapshot(),
                 warning: store.warning,
                 backup: backups.status(),
+                updateResult: pendingUpdateResult,
               };
+              pendingUpdateResult = null;
               break;
             case 'change':
               value = await store.change(payload.action, payload.payload);

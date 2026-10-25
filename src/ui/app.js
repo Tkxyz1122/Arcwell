@@ -890,7 +890,12 @@ $('settings').onclick = async () => {
   cancel.onclick = () => updateOperation(cancel, () => api.cancelUpdate());
   install.onclick = () =>
     updateOperation(install, async () => {
-      if (await api.installUpdate()) toast('更新器已启动，请完成更新向导。');
+      showUpdateFeedback({ status: 'installing' });
+      try {
+        await api.installUpdate();
+      } catch (error) {
+        showUpdateFeedback({ status: 'failed' }, error.message);
+      }
     });
   releases.onclick = () => updateOperation(releases, () => api.updateReleases());
   paintUpdate(await api.updateStatus());
@@ -1020,6 +1025,32 @@ window.addEventListener('beforeunload', (event) => {
   }
 });
 hydrateIcons();
+let updateInProgress = false;
+function showUpdateFeedback(result, detail) {
+  const success = result.status === 'success';
+  updateInProgress = result.status === 'installing';
+  $('update-feedback-title').textContent = updateInProgress
+    ? '正在更新'
+    : success
+      ? '更新成功'
+      : '更新失败';
+  $('update-feedback-message').textContent =
+    detail ||
+    (updateInProgress
+      ? '正在原安装目录后台更新，完成后会自动重新打开应用。\n收藏与设置会保留，请稍候。'
+      : success
+        ? `已更新至 ${result.version}，收藏与设置均已保留。`
+        : result.status === 'rollback-failed'
+          ? '程序文件未能完整恢复，请重新运行安装程序修复。收藏与备份数据保留在本地。'
+          : '更新未完成，收藏与设置未被删除。请检查文件占用、权限和磁盘空间后重试。');
+  $('update-feedback-done').hidden = updateInProgress;
+  if (!$('update-feedback').open) $('update-feedback').showModal();
+}
+$('update-feedback-done').onclick = () => $('update-feedback').close();
+$('update-feedback').oncancel = (event) => {
+  if (updateInProgress) event.preventDefault();
+};
+api.onUpdateResult((result) => showUpdateFeedback(result));
 api
   .load()
   .then((result) => {
@@ -1027,5 +1058,6 @@ api
     updateBackup(result.backup);
     refresh();
     if (result.warning) toast(result.warning);
+    if (result.updateResult) showUpdateFeedback(result.updateResult);
   })
   .catch((error) => toast(error.message));

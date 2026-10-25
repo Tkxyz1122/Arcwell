@@ -9,9 +9,10 @@ RequestExecutionLevel user
 SetCompressor /SOLID lzma
 CRCCheck on
 Icon "..\assets\icon.ico"
-InstallDir "$LOCALAPPDATA\Programs\Arcwell"
+InstallDir ""
 BrandingText "Arcwell ${VERSION}"
 ShowInstDetails show
+SilentInstall silent
 Var stage
 Var rollbackFailed
 Var failureText
@@ -20,6 +21,11 @@ Var entryCount
 Var updateActive
 Var testRoot
 Var replaceUninstaller
+Var targetKnown
+Var reportStatus
+Var resultReported
+Var resultDirectory
+Var resumeArguments
 !macro Trace TEXT
   !ifdef ARCWELL_TRACE_LOG
     FileOpen $9 "${ARCWELL_TRACE_LOG}" a
@@ -31,9 +37,9 @@ Var replaceUninstaller
 !define REGKEY "Software\${APP_GUID}"
 !define UNINSTALLKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_GUID}"
 !define MUI_CUSTOMFUNCTION_ABORT ArcwellUserAbort
-!define MUI_DIRECTORYPAGE_TEXT_TOP "选择原来安装 Arcwell 的文件夹。更新只替换程序文件，保留收藏、备份设置、快捷方式和目录中的网址备份。请先保存正在编辑的内容。"
-!define MUI_PAGE_CUSTOMFUNCTION_LEAVE VerifyDirectory
-!insertmacro MUI_PAGE_DIRECTORY
+!define MUI_WELCOMEPAGE_TITLE "更新 Arcwell ${VERSION}"
+!define MUI_WELCOMEPAGE_TEXT "将直接更新原来的程序目录，无需重新选择位置：$\r$\n$\r$\n$INSTDIR$\r$\n$\r$\n收藏、备份设置、快捷方式和网址备份会保留。请先保存正在编辑的内容，点击下一步开始更新。"
+!insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_INSTFILES
 !define MUI_FINISHPAGE_TITLE "Arcwell 已更新"
 !define MUI_FINISHPAGE_TEXT "已更新原安装位置的程序，无需卸载。收藏、备份设置和快捷方式均保持不变。"
@@ -56,19 +62,29 @@ Function .onInit
   ; assigned its exact value to INSTDIR. Detect it in the OS command line
   ; and retain that value before attempting registry-based auto-detection.
   Call HasExplicitDirectory
+  StrCpy $targetKnown $5
   ${If} $5 == 0
+  ${AndIf} ${FileExists} "$EXEDIR\Arcwell.exe"
+  ${AndIf} ${FileExists} "$EXEDIR\resources\app.asar"
+    StrCpy $INSTDIR $EXEDIR
+    StrCpy $targetKnown 1
+  ${ElseIf} $5 == 0
     ReadRegStr $0 HKCU "${REGKEY}" InstallLocation
     ${If} $0 == ""
       ReadRegStr $0 HKLM "${REGKEY}" InstallLocation
     ${EndIf}
     ${If} $0 != ""
       StrCpy $INSTDIR $0
-    ${ElseIf} ${FileExists} "$EXEDIR\Arcwell.exe"
-      StrCpy $INSTDIR $EXEDIR
+      StrCpy $targetKnown 1
     ${EndIf}
   ${EndIf}
   !insertmacro Trace "raw: $CMDLINE; chosen: $INSTDIR"
   Call GuardTestDirectory
+  ${If} $targetKnown != 1
+    MessageBox MB_OK|MB_ICONEXCLAMATION "未找到原安装目录，更新已停止。请从已安装的 Arcwell 内检查更新；便携版可将更新程序放到 Arcwell.exe 所在文件夹再运行。此次未安装或修改文件。" /SD IDOK
+    SetErrorLevel 2
+    Quit
+  ${EndIf}
   !insertmacro Trace "target: $INSTDIR"
 FunctionEnd
 
@@ -116,7 +132,7 @@ Function VerifyDirectory
   Call GuardTestDirectory
   ${IfNot} ${FileExists} "$INSTDIR\Arcwell.exe"
   ${OrIfNot} ${FileExists} "$INSTDIR\resources\app.asar"
-    MessageBox MB_OK|MB_ICONEXCLAMATION "这里没有已安装的 Arcwell。请选择同时包含 Arcwell.exe 和 resources 的原软件文件夹；首次使用请运行安装包。" /SD IDOK
+    MessageBox MB_OK|MB_ICONEXCLAMATION "原安装目录中未找到完整的 Arcwell，更新已停止。请从可正常运行的 Arcwell 内检查更新；首次使用请运行安装包。此次未修改程序文件。" /SD IDOK
     SetErrorLevel 2
     Abort
   ${EndIf}
@@ -152,10 +168,62 @@ FunctionEnd
 Function .onInstFailed
   !insertmacro Trace "failed: $failureText"
   StrCpy $updateActive 0
+  StrCpy $reportStatus "failed"
+  ${If} $rollbackFailed == 1
+    StrCpy $reportStatus "rollback-failed"
+  ${EndIf}
+  Call ReportUpdateResult
 FunctionEnd
 
 Function .onInstSuccess
   StrCpy $updateActive 0
+  StrCpy $reportStatus "success"
+  Call ReportUpdateResult
+FunctionEnd
+
+Function ReportUpdateResult
+  ; Test reporting is opt-in and remains restricted to the same isolated root.
+  ReadEnvStr $0 "ARCWELL_UPDATE_TEST_ROOT"
+  StrCpy $resumeArguments ""
+  ${If} $0 != ""
+    ReadEnvStr $1 "ARCWELL_UPDATE_TEST_REPORT"
+    ${If} $1 != "1"
+      Return
+    ${EndIf}
+    GetFullPathName $0 "$0"
+    StrCpy $0 "$0\"
+    ReadEnvStr $resultDirectory "ARCWELL_TEST_DATA"
+    ${If} $resultDirectory == ""
+      Return
+    ${EndIf}
+    GetFullPathName $resultDirectory "$resultDirectory"
+    StrLen $1 $0
+    StrCpy $2 "$resultDirectory\" $1
+    ${If} $2 != $0
+      Return
+    ${EndIf}
+    StrCpy $resumeArguments "--arcwell-test --remote-debugging-port=0"
+  ${Else}
+    SetShellVarContext current
+    StrCpy $resultDirectory "$APPDATA\Arcwell"
+  ${EndIf}
+  ${If} $resultReported == 1
+    Return
+  ${EndIf}
+  StrCpy $resultReported 1
+  CreateDirectory "$resultDirectory"
+  ClearErrors
+  FileOpen $0 "$resultDirectory\update-result.json.tmp" w
+  ${IfNot} ${Errors}
+    FileWrite $0 '{$\"status$\":$\"$reportStatus$\",$\"version$\":$\"${VERSION}$\"}'
+    FileClose $0
+    Delete "$resultDirectory\update-result.json"
+    Rename "$resultDirectory\update-result.json.tmp" "$resultDirectory\update-result.json"
+  ${EndIf}
+  ${If} ${FileExists} "$INSTDIR\Arcwell.exe"
+  ${AndIf} ${FileExists} "$INSTDIR\resources\app.asar"
+    Exec '$\"$INSTDIR\Arcwell.exe$\" $resumeArguments --arcwell-update-result=$reportStatus --arcwell-update-version=${VERSION}'
+  ${EndIf}
 FunctionEnd
 
 Function CloseArcwell
