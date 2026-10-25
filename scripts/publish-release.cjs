@@ -11,6 +11,8 @@ const pkg = require('../package.json');
   const names = [
     `Arcwell-${pkg.version}-Setup.exe`,
     `Arcwell-${pkg.version}-Update.exe`,
+    `Arcwell-${pkg.version}-Portable.zip`,
+    `Arcwell-${pkg.version}-Portable.zip.sha256`,
     'SHA256.txt',
     'update.json',
   ];

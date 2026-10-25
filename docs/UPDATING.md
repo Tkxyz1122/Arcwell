@@ -4,10 +4,12 @@
 
 “设置与备份 → 应用更新”提供检查、下载、取消和安装。只有指定仓库的 HTTPS 发布地址可作为入口，跳转仅允许 GitHub 的下载域名。清单大小上限 64 KB，包上限 400 MB，请求与下载有超时。网络失败可重试，取消不改程序和收藏。
 
-每个 Release 必须有四个文件：
+每个 Release 提供以下文件；项目首页以安装程序为主要下载入口，便携版为可选项，日常更新在应用内完成：
 
 - `Arcwell-x.y.z-Setup.exe`：首次安装。
 - `Arcwell-x.y.z-Update.exe`：完整原目录更新。
+- `Arcwell-x.y.z-Portable.zip`：可选便携版，解压后包含完整 Arcwell 文件夹。
+- `Arcwell-x.y.z-Portable.zip.sha256`：便携版校验值。
 - `SHA256.txt`：便于人工校验。
 - `update.json`：Ed25519 签名的版本、仓库、包名、大小和 SHA-256 清单。
 
@@ -26,7 +28,9 @@ npm run build
 npm run release:manifest
 ```
 
-先调整 package.json 和锁文件的版本、build.directories.output、启动Arcwell.cmd，更新 CHANGELOG.md 和 docs/release-notes.md。确认本地测试及更新包测试后提交、推送源码，设置 `GH_TOKEN`（仅在发布进程环境内），执行 `node scripts/publish-release.cjs`。脚本先上传到草稿，四个文件上传完后发布；拒绝覆盖已发布的同版本。失败可对相同草稿重试。
+先调整 package.json 和锁文件的版本、build.directories.output，以及 README 和发布说明中的下载链接。更新 CHANGELOG.md 和 docs/release-notes.md。确认本地测试及更新包测试后提交、推送源码，设置 `GH_TOKEN`（仅在发布进程环境内），执行 `node scripts/publish-release.cjs`。脚本先上传到草稿，全部文件上传完后发布；拒绝覆盖已发布的同版本。失败可对相同草稿重试。
+
+`npm run build` 同时生成安装、更新与便携文件；仅补打便携版可运行 `npm run build:portable`。便携版构建只复制已知程序文件，压缩包内统一放入 Arcwell 文件夹，不包含收藏或本地维护脚本。0.5.1 后补的便携包使用独立校验文件，原有 SHA256.txt 与签名更新资产保持不变；下一版生成的 SHA256.txt 会包含三种包。
 
 签名私钥使用 `ARCWELL_UPDATE_PRIVATE_KEY` 环境变量，或仅保存在本地 `.tools/release-signing/private.pem`。**私钥不进 Git、不进安装包。维护者应另行安全备份；不要随意重新生成，否则已安装应用不再信任后续更新。** 公钥可以公开。发布脚本不打印访问令牌或私钥。公开仓库并不赋予来访者发布权限。
 

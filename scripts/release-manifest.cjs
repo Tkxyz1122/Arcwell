@@ -36,7 +36,7 @@ const pkg = require('../package.json');
     ) + '\n',
   );
   const checksums = [];
-  for (const suffix of ['Setup.exe', 'Update.exe']) {
+  for (const suffix of ['Setup.exe', 'Update.exe', 'Portable.zip']) {
     const name = `Arcwell-${pkg.version}-${suffix}`;
     checksums.push(`${await hashFile(path.join(directory, name))}  ${name}`);
   }

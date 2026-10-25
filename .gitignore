@@ -9,6 +9,9 @@ test-results/
 /代码规范.md
 /开发日志.md
 /DESIGN.md
+/启动开发.cmd
+/构建.cmd
+/启动Arcwell.cmd
 *.pem
 !src/update-public.pem
 .env*

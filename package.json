@@ -12,11 +12,12 @@
     "check": "node scripts/check.cjs",
     "format": "prettier --write src scripts tests package.json .prettierrc.json",
     "format:check": "prettier --check src scripts tests package.json .prettierrc.json",
-    "build": "electron-builder --win nsis --x64 && node scripts/build-updater.cjs",
+    "build": "electron-builder --win nsis --x64 && node scripts/build-updater.cjs && node scripts/build-portable.cjs",
     "build:updater": "node scripts/build-updater.cjs",
     "test:update": "node scripts/updater-test.cjs",
     "test:import": "node scripts/import-test.cjs",
-    "release:manifest": "node scripts/release-manifest.cjs"
+    "release:manifest": "node scripts/release-manifest.cjs",
+    "build:portable": "node scripts/build-portable.cjs"
   },
   "build": {
     "electronDist": "node_modules/electron/dist",

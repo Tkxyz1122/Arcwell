@@ -1,11 +1,13 @@
-修复 0.5.0 的 GitHub 下载重定向问题。使用原生请求事件逐跳校验，完整 GitHub 更新包的实际下载、发布签名与 SHA-256 已验证。
+<p>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/Arcwell-0.5.1-Setup.exe">下载安装版</a> · <a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/Arcwell-0.5.1-Portable.zip">下载便携版 ZIP</a>
+</p>
 
-导入按钮回到左下角设置旁，使用文件导入图标；文件夹默认折叠。单击收藏容器或标题打开网页，星标、菜单和分类区域不会误开，悬停时高亮。
+**安装版**：运行安装程序，按向导完成安装。
 
-设置中新增 GitHub 更新：检查正式版本、下载更新、验证 Ed25519 发布签名及 SHA-256，再启动现有更新器。按需联网，核心收藏功能可离线使用。
+**便携版**：解压后进入 Arcwell 文件夹，双击 Arcwell.exe；请保留完整文件夹。
 
-**首次安装**：下载 Setup.exe。
+**检查更新**：应用左下角齿轮 → 应用更新 → 检查更新，在应用内下载并安装后续版本。
 
-**已有版本**：下载 Update.exe 原目录更新，无需卸载。0.5.0 及更早版本需要手动运行一次本次更新包，之后可使用应用内更新入口。
+**手动更新（备用）**：[下载更新程序](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.1/Arcwell-0.5.1-Update.exe)，按向导选择原程序目录，无需卸载。
 
-Windows 11 x64。应用和 EXE 暂未配置 Windows Authenticode 证书；发布签名用于应用内验证更新包，不替代 Windows 代码签名。收藏、备份设置与快捷方式保留。完整更新包约 110 MB。
+本版支持文件夹默认折叠、单击打开网页与悬停高亮，修复 GitHub 下载跳转。更多功能和演示图见项目首页。

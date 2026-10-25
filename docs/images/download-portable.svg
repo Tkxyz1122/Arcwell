@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="46" viewBox="0 0 220 46">
+  <rect x=".5" y=".5" width="219" height="45" rx="9" fill="#f2f2f1" stroke="#d8dcda"/>
+  <g fill="none" stroke="#278760" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14h17v19H17zM16 11h19v5H16zM25 17v10m-3-3 3 3 3-3"/></g>
+  <text x="47" y="29" fill="#22282a" font-size="15" font-family="Segoe UI,Microsoft YaHei,sans-serif" font-weight="600">下载便携版 · ZIP</text>
+</svg>
