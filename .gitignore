@@ -2,6 +2,7 @@ node_modules/
 .tools/
 release/
 test-results/
+/assets/icon-preview.png
 *.log
 /网址备份.html
 /网址备份.html.*.tmp
