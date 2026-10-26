@@ -552,7 +552,15 @@ function renderInspector() {
   const form = element('form', 'detail-form');
   form.id = 'detail-form';
   const title = input('detail-title', bookmark.title, 120);
-  const url = input('detail-url', bookmark.url, 4096);
+  const url = element('textarea');
+  url.id = 'detail-url';
+  url.value = bookmark.url;
+  url.maxLength = 4096;
+  url.required = true;
+  url.rows = 2;
+  url.spellcheck = false;
+  url.inputMode = 'url';
+  url.wrap = 'soft';
   const folder = folderSelect('detail-folder', bookmark.folderId);
   const note = element('textarea');
   note.id = 'detail-note';

@@ -730,7 +730,7 @@ main {
   border: 1px solid var(--line);
   border-radius: calc(var(--radius) * 2);
   background: linear-gradient(150deg, #fff, var(--canvas));
-  margin-bottom: var(--layout-section-block);
+  margin-bottom: var(--detail-gap);
   overflow: hidden;
 }
 .profile-cover {
@@ -748,7 +748,7 @@ main {
   display: flex;
   align-items: center;
   gap: var(--detail-gap);
-  margin: 14px 12px 12px;
+  margin: 10px 12px 8px;
 }
 .detail-brand .website-icon {
   flex-shrink: 0;
@@ -786,7 +786,7 @@ main {
   text-overflow: ellipsis;
 }
 .profile-actions {
-  padding: 0 12px 12px;
+  padding: 0 12px 10px;
 }
 .footer-actions {
   display: flex;
@@ -821,7 +821,7 @@ main {
   padding-top: var(--detail-gap);
   display: flex;
   flex-direction: column;
-  gap: calc(var(--detail-gap) + 3px);
+  gap: max(7px, calc(var(--detail-gap) - 2px));
 }
 .field {
   display: flex;
@@ -1113,14 +1113,8 @@ dialog::backdrop {
 .folder-row .nav-item {
   padding-right: 10px;
 }
-.inspector .field:not(:has(textarea)) {
-  display: grid;
-  grid-template-columns: 60px minmax(0, 1fr);
-  column-gap: 8px;
-  align-items: center;
-}
 .inspector .field {
-  gap: 4px;
+  gap: 3px;
   font-size: var(--caption);
 }
 .inspector .field input,
@@ -1130,11 +1124,16 @@ dialog::backdrop {
   font-size: var(--caption);
 }
 .inspector .field textarea {
-  height: 62px;
-  min-height: 62px;
+  height: 56px;
+  min-height: 56px;
   padding: 7px 8px;
   font-size: var(--caption);
   resize: vertical;
+}
+.inspector #detail-url {
+  height: 48px;
+  min-height: 48px;
+  overflow-wrap: anywhere;
 }
 .detail-star {
   padding: 5px 0 9px;
@@ -1151,7 +1150,7 @@ dialog::backdrop {
 }
 @media (min-height: 900px) {
   :root {
-    --detail-gap: 20px;
+    --detail-gap: 14px;
     --profile-cover-height: 60px;
   }
   .inspector .field input,

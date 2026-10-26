@@ -3,11 +3,11 @@
 <p align="center"><img src="assets/icon.svg" width="64" alt="Arcwell" /></p>
 <p align="center"><strong>A quiet home for your bookmarks.</strong><br />把常用网站、工作资料和灵感网页，整理成自己的桌面收藏库。</p>
 <p align="center">
-<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.4/Arcwell-0.5.4-Setup.exe"><img src="docs/images/download-setup.svg?v=compact" alt="下载安装版" /></a>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Setup.exe"><img src="docs/images/download-setup.svg?v=compact" alt="下载安装版" /></a>
 &nbsp;
-<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.4/Arcwell-0.5.4-Portable.zip"><img src="docs/images/download-portable.svg?v=compact" alt="下载便携版 ZIP" /></a>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Portable.zip"><img src="docs/images/download-portable.svg?v=compact" alt="下载便携版 ZIP" /></a>
 </p>
-<p align="center">Windows 11 · x64 · 当前版本 0.5.4</p>
+<p align="center">Windows 11 · x64 · 当前版本 0.5.5</p>
 
 ## Arcwell 是什么
 
@@ -38,7 +38,7 @@ Arcwell 是一款本地优先的 Windows 桌面网页收藏管理工具。你可
 
 ### 安装版（推荐）
 
-[下载安装程序 · Arcwell 0.5.4 Setup.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.4/Arcwell-0.5.4-Setup.exe)
+[下载安装程序 · Arcwell 0.5.5 Setup.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Setup.exe)
 
 下载的是 **EXE 安装程序，无需手动解压**。双击后按向导选择位置并完成安装。程序会放入独立的 Arcwell 文件夹，避免文件散落在目标目录。
 
@@ -46,7 +46,7 @@ Arcwell 是一款本地优先的 Windows 桌面网页收藏管理工具。你可
 
 ### 便携版（可选）
 
-[下载便携版 · Arcwell 0.5.4 Portable.zip](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.4/Arcwell-0.5.4-Portable.zip)
+[下载便携版 · Arcwell 0.5.5 Portable.zip](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Portable.zip)
 
 解压后打开其中的 **Arcwell** 文件夹，双击 **Arcwell.exe**。请保留完整文件夹，移动程序时一起移动。
 
@@ -60,7 +60,7 @@ Arcwell 是一款本地优先的 Windows 桌面网页收藏管理工具。你可
 4. **补充信息**：点击收藏右侧三横线菜单或右键菜单，选择“编辑详情”，修改名称、网址、所属文件夹和备注，完成后保存。
 5. **设置第二份备份**：点击左下角齿轮，在“自动 HTML 备份”中选择自定义备份目录。
 
-排序栏可选择“添加时间”或“名称排序”，点击旁边的箭头切换升序 / 降序；两种排序分别记住本次使用的方向。“最近添加”始终限定最新 30 条。详情栏以网站图标、名称与柔和绿色渐变资料卡展示网站信息，编辑表单下保留适度留白。
+排序栏可选择“添加时间”或“名称排序”，点击旁边的箭头切换升序 / 降序；两种排序分别记住本次使用的方向。“最近添加”始终限定最新 30 条。详情栏以网站图标、名称与柔和绿色渐变资料卡展示网站信息，编辑表单采用标签在上、控件在下的统一布局；网址框可自动折行，便于查看和修改长链接，底部保留适度留白。
 
 顶部网址输入框用于**直接打开输入的网址**，不会自动添加收藏。需要保存到收藏库时，请使用“添加网址”。长文件夹名称被省略后，鼠标悬停可查看完整路径。
 
@@ -128,7 +128,7 @@ Arcwell 在保存收藏修改后，同步更新两份固定名称的 **网址备
 
 首次从旧版升级，或无法使用应用内更新时，可手动下载更新程序：
 
-[下载 Arcwell 0.5.4 更新程序 · Update.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.4/Arcwell-0.5.4-Update.exe)
+[下载 Arcwell 0.5.5 更新程序 · Update.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Update.exe)
 
 先保存正在编辑的内容，再运行更新程序。程序会自动使用原安装位置，后台更新后重新打开 Arcwell 并显示结果，**无需先卸载旧版或重新选择目录**。便携版可将更新程序放到 Arcwell.exe 所在文件夹后运行。找不到原程序时会停止，不向新的默认位置安装。后续可继续通过应用内“检查更新”更新。
 
@@ -176,7 +176,7 @@ npm run build
 
 技术栈为 Electron、原生 HTML / CSS / JavaScript、htmlparser2 与 electron-builder。渲染器使用沙箱，文件保存、导入、备份、默认浏览器调用与更新下载由主进程负责。代码按界面、业务规则、存储、备份、图标和更新模块拆分。
 
-`npm run build` 生成安装程序、更新程序及便携 ZIP，产物位于 `release/0.5.4`。更详细的开发结构、数据恢复和发布流程见：
+`npm run build` 生成安装程序、更新程序及便携 ZIP，产物位于 `release/0.5.5`。更详细的开发结构、数据恢复和发布流程见：
 
 - [开发与数据说明](docs/DEVELOPMENT.md)
 - [更新与发布](docs/UPDATING.md)

@@ -1,6 +1,6 @@
 {
   "name": "arcwell",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Arcwell — a quiet home for your bookmarks",
   "author": "Arcwell",
   "license": "UNLICENSED",
@@ -26,7 +26,7 @@
     "appId": "app.arcwell.desktop",
     "productName": "Arcwell",
     "directories": {
-      "output": "release/0.5.4"
+      "output": "release/0.5.5"
     },
     "files": [
       "src/**/*",

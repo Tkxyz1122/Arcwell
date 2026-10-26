@@ -36,7 +36,7 @@ npm run format:check
 npm run build
 ```
 
-产物位于 `release/0.5.4`：Setup.exe 是安装向导，Portable.zip 是可选的便携版；Update.exe 供应用内更新及手动更新备用。便携运行需保留完整 Arcwell 文件夹。依赖由 npm ci 根据锁文件恢复。
+产物位于 `release/0.5.5`：Setup.exe 是安装向导，Portable.zip 是可选的便携版；Update.exe 供应用内更新及手动更新备用。便携运行需保留完整 Arcwell 文件夹。依赖由 npm ci 根据锁文件恢复。
 
 界面测试：`npm run test:sorting`（双向排序、最新30条范围、资料卡与留白）、`npm run test:ui`、`npm run test:import`、`node scripts/release-ui-test.cjs`，均使用隔离数据。原生更新器测试需指定只读旧版基线，见 [更新与发布](UPDATING.md)。
 

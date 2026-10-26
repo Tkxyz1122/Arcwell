@@ -132,6 +132,14 @@ async function capture(application, destination) {
       /gradient/,
     );
     assert.equal(await page.locator('.site-profile .website-icon').count(), 1);
+    const edited = library.bookmarks[12];
+    const longUrl = edited.url + '?reference=' + 'long-link-'.repeat(16);
+    await page.fill('#detail-url', longUrl);
+    await page.locator('#detail-url').evaluate((node) => {
+      node.setSelectionRange(0, 0);
+      node.scrollTop = 0;
+    });
+    await page.locator('#detail-url').blur();
     for (const [width, height] of [
       [1280, 820],
       [980, 680],
@@ -157,24 +165,69 @@ async function capture(application, destination) {
           overflow: pane.scrollHeight - pane.clientHeight,
           horizontalOverflow: document.body.scrollWidth - innerWidth,
           brandOverflow: brand.scrollWidth - brand.clientWidth,
+          urlOverflow:
+            document.querySelector('#detail-url').scrollWidth -
+            document.querySelector('#detail-url').clientWidth,
+          fields: [...pane.querySelectorAll('.field')].map((field) => {
+            const range = document.createRange();
+            range.selectNodeContents(field.firstChild);
+            const label = range.getBoundingClientRect();
+            const control = field.querySelector('input, textarea, select').getBoundingClientRect();
+            return {
+              gap: control.top - label.bottom,
+              fullWidth: Math.abs(control.width - field.getBoundingClientRect().width) < 1,
+            };
+          }),
         };
       });
+      await capture(application, path.join(temporary, `profile-final-${width}.png`));
       assert.ok(layout.overflow <= 1, 'Inspector editing controls must fit.');
       assert.equal(layout.horizontalOverflow, 0);
+      assert.equal(layout.urlOverflow, 0, 'Long URLs wrap without horizontal scrolling.');
+      for (const field of layout.fields) {
+        assert.ok(
+          field.gap >= 2 && field.gap <= 7,
+          'Labels must be above their controls with a small gap.',
+        );
+        assert.equal(field.fullWidth, true);
+      }
       assert.ok(layout.brandOverflow <= 1, 'Long website names must stay in the profile.');
       if (width !== 980)
         assert.ok(
           layout.blank >= 0.25 && layout.blank <= 0.36,
-          'Normal windows retain about 30% space below.',
+          'Normal windows retain about 30% space below: ' + JSON.stringify(layout),
         );
       report.layouts.push(layout);
-      await capture(application, path.join(temporary, `profile-final-${width}.png`));
     }
     assert.equal(
       await fs.readFile(libraryPath, 'utf8'),
       savedLibrary,
       'Sorting and profile browsing never rewrite bookmarks.',
     );
+    await page.fill('#detail-url', 'javascript:alert(1)');
+    await page.locator('#detail-form button[type=submit]').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#detail-error').textContent.includes('HTTP'),
+    );
+    assert.equal(
+      (await page.evaluate(() => window.arcwell.load())).library.bookmarks.find(
+        (b) => b.id === edited.id,
+      ).url,
+      edited.url,
+    );
+    await page.fill('#detail-url', longUrl);
+    await page.locator('#detail-form button[type=submit]').click();
+    await page.waitForFunction(
+      () =>
+        !document.querySelector('#detail-form button[type=submit]').textContent.includes('未保存'),
+    );
+    assert.equal(
+      (await page.evaluate(() => window.arcwell.load())).library.bookmarks.find(
+        (b) => b.id === edited.id,
+      ).url,
+      longUrl,
+    );
+    assert.equal(await page.inputValue('#detail-url'), longUrl);
     assert.deepEqual(errors, []);
     report.passed = true;
     await fs.writeFile(
