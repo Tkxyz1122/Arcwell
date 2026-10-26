@@ -1,6 +1,6 @@
 {
   "name": "arcwell",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Arcwell — a quiet home for your bookmarks",
   "author": "Arcwell",
   "license": "UNLICENSED",
@@ -18,14 +18,15 @@
     "test:uninstall": "node scripts/uninstall-test.cjs",
     "test:import": "node scripts/import-test.cjs",
     "release:manifest": "node scripts/release-manifest.cjs",
-    "build:portable": "node scripts/build-portable.cjs"
+    "build:portable": "node scripts/build-portable.cjs",
+    "test:sorting": "node scripts/sorting-ui-test.cjs"
   },
   "build": {
     "electronDist": "node_modules/electron/dist",
     "appId": "app.arcwell.desktop",
     "productName": "Arcwell",
     "directories": {
-      "output": "release/0.5.3"
+      "output": "release/0.5.4"
     },
     "files": [
       "src/**/*",

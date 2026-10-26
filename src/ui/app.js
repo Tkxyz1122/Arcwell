@@ -16,7 +16,8 @@ const paths = {
   square: '<rect x="5" y="5" width="14" height="14" rx="1"/>',
   list: '<path d="M4 6h16M4 12h16M4 18h16"/>',
   grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
-  sort: '<path d="M8 4v16m-3-3 3 3 3-3M16 20V4m-3 3 3-3 3 3"/>',
+  ascending: '<path d="M12 20V4m-5 5 5-5 5 5"/>',
+  descending: '<path d="M12 4v16m-5-5 5 5 5-5"/>',
   edit: '<path d="m15 4 5 5-10 10-6 1 1-6zM13 6l5 5"/>',
   archive: '<path d="M4 8h16v13H4zM3 3h18v5H3zM9 12h6"/>',
   import: '<path d="M8 7V3h7l5 5v13H8v-4M15 3v5h5M3 12h10m-4-4 4 4-4 4"/>',
@@ -31,6 +32,7 @@ const state = {
   query: '',
   starred: false,
   sort: 'recent',
+  sortDirections: { recent: 'desc', name: 'asc' },
   view: 'list',
   selected: null,
   dirty: false,
@@ -211,12 +213,21 @@ function filtered() {
       .toLocaleLowerCase()
       .includes(state.query.toLocaleLowerCase());
   });
-  bookmarks.sort((a, b) =>
-    state.sort === 'name'
-      ? a.title.localeCompare(b.title, 'zh-CN')
-      : Date.parse(b.createdAt) - Date.parse(a.createdAt),
-  );
-  if (state.scope === 'recent') bookmarks = bookmarks.slice(0, 30);
+  // The recent scope always contains the latest 30, regardless of display direction.
+  if (state.scope === 'recent') {
+    bookmarks.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+    bookmarks = bookmarks.slice(0, 30);
+  }
+  const direction = state.sortDirections[state.sort] === 'asc' ? 1 : -1;
+  bookmarks.sort((a, b) => {
+    const order =
+      state.sort === 'name'
+        ? a.title.localeCompare(b.title, 'zh-CN')
+        : Date.parse(a.createdAt) - Date.parse(b.createdAt);
+    return (
+      direction * (order || a.title.localeCompare(b.title, 'zh-CN') || a.id.localeCompare(b.id))
+    );
+  });
   return bookmarks;
 }
 async function setScope(scope) {
@@ -439,7 +450,6 @@ function renderList() {
     title.title = '单击使用默认浏览器打开，通过菜单编辑详情';
     title.innerHTML = '';
     title.append(element('span', '', bookmark.title));
-    title.insertAdjacentHTML('beforeend', icon('external'));
     title.onclick = (event) => {
       event.stopPropagation();
       if (event.detail <= 1) run(() => api.open(bookmark.id));
@@ -505,16 +515,6 @@ function renderInspector() {
   const heading = element('div', 'inspector-heading');
   heading.append(element('h2', '', '链接详情'));
   pane.append(heading);
-  if (!bookmark) {
-    const empty = element('div', 'empty');
-    empty.innerHTML = icon('link');
-    empty.append(
-      element('strong', '', '每个链接，都有上下文'),
-      element('p', '', '选择一条收藏，在这里修改名称、整理备注和调整分类。'),
-    );
-    pane.append(empty);
-    return;
-  }
   const close = iconButton('close', '关闭链接详情');
   close.onclick = async () => {
     if (await discardDraft()) {
@@ -523,17 +523,32 @@ function renderInspector() {
     }
   };
   heading.append(close);
+  const profile = element('section', 'site-profile');
+  profile.setAttribute('aria-label', '网站资料');
+  const cover = element('div', 'profile-cover');
+  cover.setAttribute('aria-hidden', 'true');
   const brand = element('div', 'detail-brand');
   const text = element('div');
   text.append(
     element('strong', '', bookmark.title),
     element('small', '', new URL(bookmark.url).hostname),
   );
+  text.title = bookmark.title;
   brand.append(siteIcon(bookmark, true), text);
-  pane.append(brand);
   const open = button('打开网页', 'external', 'primary full');
   open.onclick = () => run(() => api.open(bookmark.id));
-  pane.append(open, element('p', 'browser-hint', '使用系统默认浏览器'));
+  const profileActions = element('div', 'profile-actions');
+  open.title = '使用系统默认浏览器打开';
+  profileActions.append(
+    open,
+    element(
+      'p',
+      'detail-date profile-date',
+      '添加于 ' + new Date(bookmark.createdAt).toLocaleDateString('zh-CN'),
+    ),
+  );
+  profile.append(cover, brand, profileActions);
+  pane.append(profile);
   const form = element('form', 'detail-form');
   form.id = 'detail-form';
   const title = input('detail-title', bookmark.title, 120);
@@ -563,13 +578,6 @@ function renderInspector() {
   toggle.onclick = () => toggleStar(bookmark.id);
   mark.append(label, toggle);
   form.append(mark);
-  form.append(
-    element(
-      'div',
-      'detail-date',
-      `添加于 ${new Date(bookmark.createdAt).toLocaleDateString('zh-CN')}`,
-    ),
-  );
   const error = element('p', 'form-error');
   error.id = 'detail-error';
   error.setAttribute('role', 'alert');
@@ -980,10 +988,38 @@ $('search').oninput = (event) => {
   state.query = event.target.value;
   renderList();
 };
+function renderSortDirection() {
+  const ascending = state.sortDirections[state.sort] === 'asc';
+  const criterion = state.sort === 'recent' ? '添加时间' : '名称';
+  const label =
+    '当前按' +
+    criterion +
+    (ascending ? '升序' : '降序') +
+    '，切换为' +
+    (ascending ? '降序' : '升序');
+  const control = $('sort-direction');
+  control.innerHTML = icon(ascending ? 'ascending' : 'descending');
+  control.setAttribute('aria-label', label);
+  control.title =
+    state.sort === 'recent'
+      ? ascending
+        ? '由旧到新 · 点击反转'
+        : '由新到旧 · 点击反转'
+      : ascending
+        ? '名称正序 · 点击反转'
+        : '名称倒序 · 点击反转';
+}
 $('sort').onchange = (event) => {
   state.sort = event.target.value;
+  renderSortDirection();
   renderList();
 };
+$('sort-direction').onclick = () => {
+  state.sortDirections[state.sort] = state.sortDirections[state.sort] === 'asc' ? 'desc' : 'asc';
+  renderSortDirection();
+  renderList();
+};
+renderSortDirection();
 $('all-tab').onclick = () => {
   state.starred = false;
   refresh(false);

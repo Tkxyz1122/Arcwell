@@ -95,13 +95,13 @@
               >
                 <span data-icon="more"></span>
               </button>
-              <label class="sort"
-                ><span data-icon="sort"></span
-                ><select id="sort" aria-label="排序">
-                  <option value="recent">最近添加</option>
+              <div class="sort">
+                <button id="sort-direction" type="button" aria-label="切换排序方向"></button>
+                <select id="sort" aria-label="排序">
+                  <option value="recent">添加时间</option>
                   <option value="name">名称排序</option>
-                </select></label
-              >
+                </select>
+              </div>
               <div class="view-switch">
                 <button id="list-view" class="icon-button active" aria-label="列表视图">
                   <span data-icon="list"></span></button

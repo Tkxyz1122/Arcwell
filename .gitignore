@@ -24,3 +24,6 @@ test-results/
 /cache/
 Thumbs.db
 .DS_Store
+
+/AGENTS.md
+/_Temp/
