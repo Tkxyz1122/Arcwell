@@ -1,5 +1,5 @@
 <p>
-<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.1/Arcwell-0.6.1-Setup.exe">下载安装版</a> · <a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.1/Arcwell-0.6.1-Portable.zip">下载便携版 ZIP</a>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.2/Arcwell-0.6.2-Setup.exe">下载安装版</a> · <a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.2/Arcwell-0.6.2-Portable.zip">下载便携版 ZIP</a>
 </p>
 
 **安装版**：运行安装程序，按向导完成安装。
@@ -8,7 +8,9 @@
 
 **检查更新**：应用左下角齿轮 → 应用更新 → 检查更新，在应用内下载并安装后续版本。
 
-**手动更新（备用）**：[下载更新程序](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.1/Arcwell-0.6.1-Update.exe)，自动使用原安装目录，后台更新，无需卸载。
+**手动更新（备用）**：[下载更新程序](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.2/Arcwell-0.6.2-Update.exe)，自动使用原安装目录，后台更新，无需卸载。
+
+首次启动创建新数据目录时，默认分区会放入一个 bilibili 示例链接。已有用户更新后不会被加入，删除后也不会重新出现。悬停与选中效果改为柔和底色、细边框和平滑过渡，去掉原来的粗绿色侧线。
 
 文件夹卡片高度缩小至约80%，数量信息改为鼠标停留时显示的小型提示，减少列表占用。展开区域使用偏白的浅杏色背景，内部卡片与背景清晰区分。
 

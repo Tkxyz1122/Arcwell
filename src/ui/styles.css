@@ -13,6 +13,10 @@
   --title: 27px;
   --section-title: 15px;
   --radius: 7px;
+  --row-hover: #f0f5f1;
+  --row-selected: #e8f1eb;
+  --row-selected-line: #bfd3c5;
+  --row-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --folder-inset: #fff9f1;
   --folder-inset-line: #ead9c3;
   /* Two-line folder cards occupy 80% of the previous 76px list row. */
@@ -277,19 +281,22 @@ small {
 }
 .collection-row {
   cursor: pointer;
+  border-radius: 9px;
   transition:
-    background-color 140ms ease,
-    box-shadow 140ms ease;
+    background-color 220ms var(--row-ease),
+    box-shadow 220ms var(--row-ease),
+    border-color 220ms var(--row-ease);
 }
 .collection-row:hover,
 .collection-row:focus-visible {
-  background-color: var(--selection);
-  box-shadow: inset 3px 0 var(--accent);
-  border-radius: var(--radius);
+  background-color: var(--row-hover);
+  box-shadow:
+    inset 0 0 0 1px #2787601c,
+    0 3px 12px #223e2f06;
 }
 .collection-row:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  outline: 2px solid #7aa38b;
+  outline-offset: 2px;
 }
 .update-actions {
   display: flex;
@@ -552,19 +559,9 @@ main {
   position: relative;
 }
 .collection-row.selected {
-  background: var(--selection);
-  border-radius: var(--radius);
+  background: var(--row-selected);
   border-bottom-color: transparent;
-}
-.collection-row.selected:before {
-  content: '';
-  position: absolute;
-  left: 0;
-  width: 3px;
-  top: 6px;
-  bottom: 6px;
-  background: var(--accent);
-  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px var(--row-selected-line);
 }
 .website-icon {
   height: 36px;
@@ -915,11 +912,8 @@ main {
   -webkit-box-orient: vertical;
   min-height: 32px;
 }
-.grid .collection-row.selected:before {
-  display: none;
-}
 .grid .collection-row.selected {
-  border-color: #a2c5b1;
+  border-color: var(--row-selected-line);
 }
 dialog {
   width: 440px;
@@ -1264,9 +1258,8 @@ select option:focus-visible {
 .folder-group.is-expanded > .folder-card .folder-expand svg {
   transform: rotate(90deg);
 }
-.folder-group.is-expanded > .folder-card {
+.folder-group.is-expanded > .folder-card:not(:hover):not(:focus-visible) {
   background: #27876008;
-  border-radius: var(--radius);
 }
 .folder-reveal {
   display: grid;
@@ -1355,6 +1348,9 @@ select option:focus-visible {
   grid-column: 1 / -1;
 }
 @media (prefers-reduced-motion: reduce) {
+  .collection-row {
+    transition-duration: 0.01ms;
+  }
   .folder-reveal,
   .folder-group.is-expanded > .folder-reveal,
   .folder-expand svg {

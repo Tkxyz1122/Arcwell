@@ -7,6 +7,11 @@ const root = path.resolve(__dirname, '..');
 const pkg = require('../package.json');
 (async () => {
   const directory = await fs.mkdtemp(path.join(root, 'test-results', 'import-data-'));
+  await fs.mkdir(path.join(directory, 'data'));
+  await fs.writeFile(
+    path.join(directory, 'data/library.json'),
+    JSON.stringify(require('../src/domain.cjs').emptyLibrary()),
+  );
   const file = path.join(directory, 'browser.html');
   const custom = path.join(directory, 'custom');
   await fs.mkdir(custom);

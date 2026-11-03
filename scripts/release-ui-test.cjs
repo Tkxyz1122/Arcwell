@@ -8,6 +8,11 @@ const pkg = require('../package.json');
 const root = path.resolve(__dirname, '..');
 (async () => {
   const directory = await fs.mkdtemp(path.join(root, 'test-results', 'release-ui-'));
+  await fs.mkdir(path.join(directory, 'data'));
+  await fs.writeFile(
+    path.join(directory, 'data/library.json'),
+    JSON.stringify(require('../src/domain.cjs').emptyLibrary()),
+  );
   const application = await _electron.launch({
     executablePath: path.join(root, pkg.build.directories.output, 'win-unpacked', 'Arcwell.exe'),
     args: ['--arcwell-test'],

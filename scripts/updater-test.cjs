@@ -143,6 +143,11 @@ async function openApp(target, data) {
     );
     app = await openApp(target, data);
     const loaded = await (await app.firstWindow()).evaluate(() => window.arcwell.load());
+    assert.equal(loaded.library.bookmarks.length, 1, 'An update never adds the first-run sample.');
+    assert.equal(
+      loaded.library.bookmarks.some((b) => b.url === 'https://www.bilibili.com/'),
+      false,
+    );
     assert.equal(loaded.library.bookmarks[0].note, '备注必须保留');
     assert.equal(loaded.library.bookmarks[0].starred, true);
     assert.deepEqual(

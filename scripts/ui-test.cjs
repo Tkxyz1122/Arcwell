@@ -29,6 +29,11 @@ async function launch(directory) {
 (async () => {
   await fs.mkdir(results, { recursive: true });
   const directory = await fs.mkdtemp(path.join(results, 'ui-data-'));
+  await fs.mkdir(path.join(directory, 'data'));
+  await fs.writeFile(
+    path.join(directory, 'data/library.json'),
+    JSON.stringify(require('../src/domain.cjs').emptyLibrary()),
+  );
   const fixtureIcon = await fs.readFile(path.join(root, 'assets', 'icon.ico'));
   const server = http.createServer((request, response) => {
     if (request.url === '/favicon.ico') {
@@ -389,7 +394,10 @@ async function launch(directory) {
       '.folder-title[aria-label$="工作项目 / 项目资料 / 参考链接"]',
     );
     assert.equal(await grandchildControl.count(), 1);
-    assert.equal(await grandchildControl.getAttribute('title'), '工作项目 / 项目资料 / 参考链接');
+    assert.equal(
+      await grandchildControl.getAttribute('aria-label'),
+      '收起 工作项目 / 项目资料 / 参考链接',
+    );
     assert.ok(
       await grandchildControl.evaluate(
         (node) =>

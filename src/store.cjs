@@ -20,13 +20,28 @@ class LibraryStore {
     return validateLibrary(JSON.parse(await fs.readFile(file, 'utf8')));
   }
   async load() {
-    await fs.mkdir(this.directory, { recursive: true });
+    const createdDirectory = await fs.mkdir(this.directory, { recursive: true });
     try {
       this.library = await this.read(this.file);
     } catch (error) {
       if (error.code === 'UNSUPPORTED_VERSION') throw error;
       if (error.code === 'ENOENT') {
-        this.library = emptyLibrary();
+        try {
+          this.library = await this.read(this.file + '.bak');
+          this.warning = '收藏主文件缺失，已从上次备份恢复。';
+        } catch (backupError) {
+          if (backupError.code !== 'ENOENT')
+            throw new Error('收藏主文件缺失，备份无法读取。原文件已保留，请通过备份恢复。');
+          this.library = emptyLibrary();
+          // Only a newly created data directory receives the first-run sample.
+          // Existing empty libraries and upgrade/recovery paths never receive it.
+          if (createdDirectory)
+            this.library = mutate(this.library, 'add', {
+              url: 'https://www.bilibili.com/',
+              title: 'bilibili · 哔哩哔哩',
+              folderId: 'inbox',
+            }).library;
+        }
         await this.write(this.library, false);
       } else {
         try {

@@ -115,3 +115,55 @@ test('future versions are preserved and never replaced with an older backup', as
   await assert.rejects(new LibraryStore(store.directory).load(), /不兼容/);
   assert.equal(JSON.parse(await fs.readFile(store.file, 'utf8')).version, 2);
 });
+
+test('only a new data directory receives one persistent bilibili sample; removal and replacement stay empty', async (t) => {
+  const parent = await fixture(t);
+  const directory = path.join(parent.directory, 'fresh-profile', 'data');
+  const store = new LibraryStore(directory);
+  const initial = await store.load();
+  assert.equal(initial.bookmarks.length, 1);
+  assert.equal(initial.bookmarks[0].url, 'https://www.bilibili.com/');
+  assert.equal(initial.bookmarks[0].folderId, 'inbox');
+  assert.equal(initial.bookmarks[0].starred, false);
+  assert.deepEqual(await new LibraryStore(directory).load(), initial);
+  await store.change('remove', { id: initial.bookmarks[0].id });
+  assert.equal((await new LibraryStore(directory).load()).bookmarks.length, 0);
+  await store.importHtml('<DL><A HREF="https://example.com/import">Imported</A></DL>', 'replace');
+  const replaced = await new LibraryStore(directory).load();
+  assert.deepEqual(
+    replaced.bookmarks.map((b) => b.url),
+    ['https://example.com/import'],
+  );
+});
+
+test('upgrading an existing empty or populated library never inserts the first-run sample', async (t) => {
+  const store = await fixture(t);
+  const empty = await fs.readFile(store.file, 'utf8');
+  assert.equal((await new LibraryStore(store.directory).load()).bookmarks.length, 0);
+  assert.equal(await fs.readFile(store.file, 'utf8'), empty);
+  await store.change('add', {
+    url: 'https://existing.example/',
+    title: 'Existing',
+    folderId: 'inbox',
+  });
+  const before = await fs.readFile(store.file, 'utf8');
+  const restarted = await new LibraryStore(store.directory).load();
+  assert.equal(restarted.bookmarks.length, 1);
+  assert.equal(restarted.bookmarks[0].url, 'https://existing.example/');
+  assert.equal(await fs.readFile(store.file, 'utf8'), before);
+});
+
+test('a missing primary restores the backup without seeding; an unreadable backup blocks reinitialization', async (t) => {
+  const store = await fixture(t);
+  await store.change('add', { url: 'https://existing.example/', folderId: 'inbox' });
+  const snapshot = store.snapshot();
+  await fs.rename(store.file, store.file + '.bak');
+  const restarted = new LibraryStore(store.directory);
+  assert.deepEqual(await restarted.load(), snapshot);
+  assert.match(restarted.warning, /备份/);
+  await fs.rename(store.file, store.file + '.old');
+  await fs.writeFile(store.file + '.bak', '{broken backup');
+  await assert.rejects(new LibraryStore(store.directory).load(), /备份无法读取/);
+  await assert.rejects(fs.stat(store.file), { code: 'ENOENT' });
+  assert.equal(await fs.readFile(store.file + '.bak', 'utf8'), '{broken backup');
+});
