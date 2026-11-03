@@ -110,10 +110,10 @@ const root = path.resolve(__dirname, '..');
       await page.screenshot({ path: path.join(screenshots, name) });
     };
     await shot('overview.png');
-    await page.locator('.folder-title[title="工作常用 / 项目资料"]').click();
+    await page.locator('.folder-title[aria-label$="工作常用 / 项目资料"]').click();
     assert.equal(
       await page
-        .locator('.folder-title[title="工作常用 / 项目资料"]')
+        .locator('.folder-title[aria-label$="工作常用 / 项目资料"]')
         .getAttribute('aria-expanded'),
       'true',
     );

@@ -13,6 +13,10 @@
   --title: 27px;
   --section-title: 15px;
   --radius: 7px;
+  --folder-inset: #fff9f1;
+  --folder-inset-line: #ead9c3;
+  /* Two-line folder cards occupy 80% of the previous 76px list row. */
+  --folder-row-height: 61px;
   /* Inspector spacing scales with window height, reserving breathing room below. */
   --detail-gap: 10px;
   --profile-cover-height: 48px;
@@ -1241,6 +1245,12 @@ select option:focus-visible {
 .folder-group {
   min-width: 0;
 }
+.folder-card {
+  min-height: var(--folder-row-height);
+}
+.folder-card .bookmark-note {
+  margin-top: 3px;
+}
 .folder-icon {
   background: var(--selection);
 }
@@ -1281,10 +1291,30 @@ select option:focus-visible {
   min-width: 0;
   margin: 4px 0 8px var(--nested-inset);
   padding: 3px var(--nested-padding);
-  background: #27876008;
-  border-inline-start: var(--nested-border) solid #27876028;
+  background: var(--folder-inset);
+  border-inline-start: var(--nested-border) solid var(--folder-inset-line);
   border-radius: 0 var(--radius) var(--radius) 0;
   transform-origin: top center;
+}
+:where(.folder-contents) > .collection-row,
+:where(.folder-contents > .folder-group) > .folder-card {
+  background-color: var(--canvas);
+}
+.folder-hint {
+  position: fixed;
+  z-index: 80;
+  pointer-events: none;
+  max-width: min(240px, calc(100vw - 16px));
+  padding: 5px 8px;
+  border: 1px solid #e6dfd6;
+  border-radius: 6px;
+  background: #fffdf9;
+  color: #79736a;
+  font-size: var(--caption);
+  line-height: 1.45;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  box-shadow: 0 3px 12px #49351b0c;
 }
 .folder-group.expanding > .folder-reveal > .folder-clip > .folder-contents {
   animation: folder-arrive 440ms cubic-bezier(0.2, 0.9, 0.3, 1.12);
@@ -1338,6 +1368,15 @@ select option:focus-visible {
 
 .folder-card .bookmark-actions {
   margin-left: auto;
+}
+.grid .folder-card {
+  padding: 12px;
+  gap: 8px;
+}
+.grid .folder-card .bookmark-note {
+  display: block;
+  white-space: nowrap;
+  min-height: 16px;
 }
 .grid .folder-group.is-expanded > .folder-card {
   flex-wrap: nowrap;

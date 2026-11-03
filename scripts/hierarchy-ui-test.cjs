@@ -95,6 +95,23 @@ async function capture(app, name) {
     const group = (name) => page.locator('.folder-group[data-folder-id="' + ids[name] + '"]');
     const heading = (name) => group(name).locator(':scope > .folder-card');
     const title = (name) => heading(name).locator('.folder-title');
+    assert.equal(await heading('A 项目资料').locator('.bookmark-domain').count(), 0);
+    const folderHeight = (await heading('A 项目资料').boundingBox()).height;
+    assert.ok(folderHeight >= 60 && folderHeight <= 62, 'Folder rows occupy about 80% of 76px.');
+    report.folderHeight = folderHeight;
+    await heading('A 项目资料').hover({ position: { x: 70, y: 20 } });
+    const hint = page.locator('#folder-hint');
+    await hint.waitFor({ state: 'visible' });
+    assert.equal(await hint.textContent(), '1 个文件夹 · 2 个链接');
+    const hintBox = await hint.boundingBox();
+    assert.ok(hintBox.height < 32 && hintBox.width < 220, 'The count hint stays small.');
+    await page.keyboard.press('Escape');
+    assert.equal(await hint.isVisible(), false);
+    await heading('A 项目资料').hover({ position: { x: 75, y: 20 } });
+    await hint.waitFor({ state: 'visible' });
+    await heading('A 项目资料').locator('.bookmark-actions button').last().hover();
+    assert.equal(await hint.isVisible(), false);
+    assert.equal(await app.evaluate(() => globalThis.treeOpenCount), 0);
     assert.equal(await page.locator('.bookmark-row').count(), 1);
     const children = () =>
       page.locator('#bookmark-list > .folder-group > .folder-card .folder-title').allTextContents();
@@ -110,7 +127,7 @@ async function capture(app, name) {
       await page.locator('#bookmark-list > :first-child').getAttribute('data-folder-id'),
       ids['A 项目资料'],
     );
-    await heading('A 项目资料').locator('.bookmark-domain').click();
+    await heading('A 项目资料').locator('.bookmark-note').click();
     assert.equal(await title('A 项目资料').getAttribute('aria-expanded'), 'true');
     assert.ok(
       await group('A 项目资料')
@@ -164,11 +181,11 @@ async function capture(app, name) {
       .locator('#bookmark-list > .bookmark-row')
       .evaluate((node) => getComputedStyle(node).padding);
     assert.equal(inside, outside);
-    assert.notEqual(
+    assert.equal(
       await group('A 项目资料')
         .locator(':scope > .folder-reveal > .folder-clip > .folder-contents')
         .evaluate((node) => getComputedStyle(node).backgroundColor),
-      'rgba(0, 0, 0, 0)',
+      'rgb(255, 249, 241)',
     );
     for (const mode of ['list', 'grid']) {
       await page.click('#' + mode + '-view');

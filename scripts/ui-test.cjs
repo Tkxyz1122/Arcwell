@@ -351,7 +351,7 @@ async function launch(directory) {
     await restarted.getByRole('button', { name: '新建子文件夹', exact: true }).click();
     await restarted.fill('#folder-name', '项目资料');
     await restarted.click('#modal-submit');
-    const childControl = restarted.locator('.folder-title[title="工作常用 / 项目资料"]');
+    const childControl = restarted.locator('.folder-title[aria-label$="工作常用 / 项目资料"]');
     assert.equal(await childControl.textContent(), '项目资料');
     await childControl
       .locator('..')
@@ -377,8 +377,8 @@ async function launch(directory) {
       await restarted.locator('#folders .nav-item[title="工作常用 / 项目资料"]').count(),
       0,
     );
-    await restarted.locator('.folder-title[title="工作常用 / 项目资料"]').click();
-    await restarted.locator('.folder-title[title="工作常用 / 项目资料 / 参考链接"]').click();
+    await restarted.locator('.folder-title[aria-label$="工作常用 / 项目资料"]').click();
+    await restarted.locator('.folder-title[aria-label$="工作常用 / 项目资料 / 参考链接"]').click();
     assert.equal(await restarted.locator('.bookmark-row:visible').count(), 2);
     await restarted.locator('#folder-menu').click();
     await restarted.getByRole('button', { name: '重命名', exact: true }).click();
@@ -386,7 +386,7 @@ async function launch(directory) {
     await restarted.click('#modal-submit');
     await restarted.waitForSelector('#modal', { state: 'hidden' });
     const grandchildControl = restarted.locator(
-      '.folder-title[title="工作项目 / 项目资料 / 参考链接"]',
+      '.folder-title[aria-label$="工作项目 / 项目资料 / 参考链接"]',
     );
     assert.equal(await grandchildControl.count(), 1);
     assert.equal(await grandchildControl.getAttribute('title'), '工作项目 / 项目资料 / 参考链接');

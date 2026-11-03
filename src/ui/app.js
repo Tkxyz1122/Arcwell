@@ -388,6 +388,56 @@ function bookmarkRow(bookmark) {
   row.append(actions);
   return row;
 }
+// One hint serves the whole collection; rerenders cannot leave per-card timers behind.
+const folderHint = (() => {
+  const hint = $('folder-hint');
+  const list = $('bookmark-list');
+  let card = null;
+  let timer;
+  let x = 0;
+  let y = 0;
+  const hide = () => {
+    clearTimeout(timer);
+    card = null;
+    hint.hidden = true;
+  };
+  const position = () => {
+    const { width, height } = hint.getBoundingClientRect();
+    const left = Math.max(8, Math.min(x + 12, innerWidth - width - 8));
+    const top = y + height + 22 > innerHeight ? y - height - 10 : y + 14;
+    hint.style.left = left + 'px';
+    hint.style.top = Math.max(8, Math.min(top, innerHeight - height - 8)) + 'px';
+  };
+  list.addEventListener('pointermove', (event) => {
+    if (event.pointerType !== 'mouse') return;
+    x = event.clientX;
+    y = event.clientY;
+    const candidate = event.target.closest('.folder-card');
+    if (!candidate || event.target.closest('.icon-button')) return hide();
+    if (card === candidate) {
+      if (!hint.hidden) position();
+      return;
+    }
+    hide();
+    card = candidate;
+    timer = setTimeout(() => {
+      if (!card?.isConnected || $('modal').open || !$('context-menu').hidden) return hide();
+      const name = card.querySelector('.folder-title > span');
+      hint.textContent =
+        (name.scrollWidth > name.clientWidth ? name.textContent + '\n' : '') +
+        card.dataset.folderSummary;
+      hint.hidden = false;
+      position();
+    }, 400);
+  });
+  list.addEventListener('pointerleave', hide);
+  list.addEventListener('scroll', hide, { passive: true });
+  document.addEventListener('pointerdown', hide, true);
+  document.addEventListener('keydown', hide, true);
+  window.addEventListener('blur', hide);
+  window.addEventListener('resize', hide);
+  return { hide };
+})();
 function folderGroup(entry, view, depth = 0) {
   const { folder, parts } = entry;
   const group = element('section', 'folder-group');
@@ -401,14 +451,13 @@ function folderGroup(entry, view, depth = 0) {
   folderIcon.innerHTML = icon('folder');
   const copy = element('div', 'bookmark-copy');
   const title = button(parts.at(-1), null, 'folder-title');
-  title.title = parts.join(' / ');
   const childCount = view.children(folder.id).folders.length;
   const count = view.counts.get(folder.id) || 0;
-  copy.append(
-    title,
-    element('span', 'bookmark-domain', childCount + ' 个文件夹 · ' + count + ' 个链接'),
-    element('p', 'bookmark-note', '单击展开，查看下一级内容'),
-  );
+  const summary = childCount + ' 个文件夹 · ' + count + ' 个链接';
+  heading.dataset.folderSummary = summary;
+  heading.setAttribute('aria-description', summary);
+  title.setAttribute('aria-description', summary);
+  copy.append(title, element('p', 'bookmark-note', '单击展开，查看下一级内容'));
   const actions = element('div', 'bookmark-actions');
   const toggle = iconButton('chevron', '展开 ' + parts.join(' / '));
   toggle.classList.add('folder-expand');
@@ -494,6 +543,7 @@ function appendCollection(container, items, view, depth = 0) {
     );
 }
 function renderList(view = currentCollection()) {
+  folderHint.hide();
   const list = $('bookmark-list');
   const scrollTop = list.scrollTop;
   list.classList.toggle('grid', state.view === 'grid');
