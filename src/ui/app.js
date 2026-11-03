@@ -336,6 +336,8 @@ function bookmarkRow(bookmark) {
     `collection-row bookmark-row ${state.selected === bookmark.id ? 'selected' : ''}`,
   );
   row.dataset.id = bookmark.id;
+  row.dataset.collectionHint = bookmark.url;
+  row.setAttribute('aria-description', bookmark.url);
   row.tabIndex = 0;
   row.setAttribute('aria-label', `${bookmark.title}，单击打开网页，菜单编辑详情`);
   row.onclick = (event) => {
@@ -354,7 +356,7 @@ function bookmarkRow(bookmark) {
   row.append(siteIcon(bookmark));
   const copy = element('div', 'bookmark-copy');
   const title = button(bookmark.title, null, 'bookmark-title');
-  title.title = '单击使用默认浏览器打开，通过菜单编辑详情';
+  title.setAttribute('aria-description', bookmark.url);
   title.innerHTML = '';
   title.append(element('span', '', bookmark.title));
   title.onclick = (event) => {
@@ -363,7 +365,6 @@ function bookmarkRow(bookmark) {
   };
   copy.append(
     title,
-    element('span', 'bookmark-domain', new URL(bookmark.url).hostname),
     element('p', 'bookmark-note', bookmark.note || '通过菜单编辑详情，添加你的备注'),
   );
   row.append(copy);
@@ -389,8 +390,8 @@ function bookmarkRow(bookmark) {
   return row;
 }
 // One hint serves the whole collection; rerenders cannot leave per-card timers behind.
-const folderHint = (() => {
-  const hint = $('folder-hint');
+const collectionHint = (() => {
+  const hint = $('collection-hint');
   const list = $('bookmark-list');
   let card = null;
   let timer;
@@ -412,7 +413,7 @@ const folderHint = (() => {
     if (event.pointerType !== 'mouse') return;
     x = event.clientX;
     y = event.clientY;
-    const candidate = event.target.closest('.folder-card');
+    const candidate = event.target.closest('.collection-row');
     if (!candidate || event.target.closest('.icon-button')) return hide();
     if (card === candidate) {
       if (!hint.hidden) position();
@@ -424,8 +425,8 @@ const folderHint = (() => {
       if (!card?.isConnected || $('modal').open || !$('context-menu').hidden) return hide();
       const name = card.querySelector('.folder-title > span');
       hint.textContent =
-        (name.scrollWidth > name.clientWidth ? name.textContent + '\n' : '') +
-        card.dataset.folderSummary;
+        (name && name.scrollWidth > name.clientWidth ? name.textContent + '\n' : '') +
+        card.dataset.collectionHint;
       hint.hidden = false;
       position();
     }, 400);
@@ -454,7 +455,7 @@ function folderGroup(entry, view, depth = 0) {
   const childCount = view.children(folder.id).folders.length;
   const count = view.counts.get(folder.id) || 0;
   const summary = childCount + ' 个文件夹 · ' + count + ' 个链接';
-  heading.dataset.folderSummary = summary;
+  heading.dataset.collectionHint = summary;
   heading.setAttribute('aria-description', summary);
   title.setAttribute('aria-description', summary);
   copy.append(title, element('p', 'bookmark-note', '单击展开，查看下一级内容'));
@@ -543,7 +544,7 @@ function appendCollection(container, items, view, depth = 0) {
     );
 }
 function renderList(view = currentCollection()) {
-  folderHint.hide();
+  collectionHint.hide();
   const list = $('bookmark-list');
   const scrollTop = list.scrollTop;
   list.classList.toggle('grid', state.view === 'grid');

@@ -24,7 +24,12 @@ const root = path.resolve(__dirname, '..');
     assert.equal(initial.bookmarks[0].folderId, 'inbox');
     const row = page.locator('.bookmark-row');
     const before = await row.boundingBox();
+    assert.equal(before.height, 61, 'Link rows match compact folder rows.');
+    assert.equal(await row.locator('.bookmark-domain').count(), 0);
     await row.hover();
+    let hint = page.locator('#collection-hint');
+    await hint.waitFor({ state: 'visible', timeout: 5000 });
+    assert.equal(await hint.textContent(), initial.bookmarks[0].url);
     await page.waitForTimeout(260);
     assert.deepEqual(await row.boundingBox(), before, 'Hover never shifts or rescales the card.');
     const hovered = await row.evaluate((n) => {
@@ -102,7 +107,45 @@ const root = path.resolve(__dirname, '..');
     page = await app.firstWindow();
     await page.waitForSelector('.empty');
     assert.equal((await page.evaluate(() => window.arcwell.load())).library.bookmarks.length, 0);
+    const longUrl = 'http://127.0.0.1:9/' + 'reference/'.repeat(350);
+    await page.evaluate(
+      (url) =>
+        window.arcwell.change('add', { url, title: '长网址提示'.repeat(24), folderId: 'inbox' }),
+      longUrl,
+    );
+    await page.reload();
+    await page.waitForSelector('.bookmark-row');
+    hint = page.locator('#collection-hint');
+    const longRow = page.locator('.bookmark-row');
+    await longRow.hover({ position: { x: 70, y: 20 } });
+    await hint.waitFor({ state: 'visible', timeout: 5000 });
+    assert.equal(await hint.textContent(), longUrl);
+    assert.ok(
+      (await hint.boundingBox()).height <= 83,
+      'Long URLs occupy at most four compact lines.',
+    );
+    const viewport = await page.evaluate(() => ({ width: innerWidth, height: innerHeight }));
+    await longRow.dispatchEvent('pointermove', {
+      pointerType: 'mouse',
+      clientX: viewport.width - 1,
+      clientY: viewport.height - 1,
+    });
+    const bounds = await hint.boundingBox();
+    assert.ok(
+      bounds.x >= 8 &&
+        bounds.y >= 8 &&
+        bounds.x + bounds.width <= viewport.width - 8 &&
+        bounds.y + bounds.height <= viewport.height - 8,
+    );
+    await page.click('#grid-view');
+    assert.equal(await hint.isVisible(), false, 'Changing views dismisses the shared hint.');
+    assert.ok(
+      await page.locator('#bookmark-list').evaluate((n) => n.scrollWidth <= n.clientWidth + 1),
+    );
     Object.assign(report, {
+      linkHeight: 61,
+      urlOnHover: true,
+      boundedLongUrl: true,
       sampleOnlyOnFirstRun: true,
       deletionSurvivesRestart: true,
       hoverNoLayoutShift: true,

@@ -19,8 +19,8 @@
   --row-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --folder-inset: #fff9f1;
   --folder-inset-line: #ead9c3;
-  /* Two-line folder cards occupy 80% of the previous 76px list row. */
-  --folder-row-height: 61px;
+  /* Two-line collection cards occupy 80% of the previous 76px list row. */
+  --collection-row-height: 61px;
   /* Inspector spacing scales with window height, reserving breathing room below. */
   --detail-gap: 10px;
   --profile-cover-height: 48px;
@@ -556,6 +556,7 @@ main {
   gap: 14px;
   border-bottom: 1px solid var(--line);
   padding: 10px 7px;
+  min-height: var(--collection-row-height);
   position: relative;
 }
 .collection-row.selected {
@@ -600,22 +601,13 @@ main {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.bookmark-domain {
-  display: block;
-  color: var(--muted);
-  font-size: var(--caption);
-  margin: 3px 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .bookmark-note {
   font-size: var(--caption);
   color: var(--muted);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  margin: 0;
+  margin: 3px 0 0;
   min-height: 16px;
 }
 .folder-chip {
@@ -892,8 +884,8 @@ main {
   border-radius: 11px;
   flex-wrap: wrap;
   align-items: flex-start;
-  padding: 15px;
-  gap: 11px;
+  padding: 12px;
+  gap: 8px;
 }
 .grid .bookmark-copy {
   flex-basis: calc(100% - 65px);
@@ -1239,12 +1231,6 @@ select option:focus-visible {
 .folder-group {
   min-width: 0;
 }
-.folder-card {
-  min-height: var(--folder-row-height);
-}
-.folder-card .bookmark-note {
-  margin-top: 3px;
-}
 .folder-icon {
   background: var(--selection);
 }
@@ -1293,7 +1279,7 @@ select option:focus-visible {
 :where(.folder-contents > .folder-group) > .folder-card {
   background-color: var(--canvas);
 }
-.folder-hint {
+.collection-hint {
   position: fixed;
   z-index: 80;
   pointer-events: none;
@@ -1307,6 +1293,10 @@ select option:focus-visible {
   line-height: 1.45;
   white-space: pre-line;
   overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
   box-shadow: 0 3px 12px #49351b0c;
 }
 .folder-group.expanding > .folder-reveal > .folder-clip > .folder-contents {

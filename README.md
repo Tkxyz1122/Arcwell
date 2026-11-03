@@ -3,11 +3,11 @@
 <p align="center"><img src="assets/icon.svg" width="64" alt="Arcwell" /></p>
 <p align="center"><strong>A quiet home for your bookmarks.</strong><br />把常用网站、工作资料和灵感网页，整理成自己的桌面收藏库。</p>
 <p align="center">
-<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.2/Arcwell-0.6.2-Setup.exe"><img src="docs/images/download-setup.svg?v=compact" alt="下载安装版" /></a>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.3/Arcwell-0.6.3-Setup.exe"><img src="docs/images/download-setup.svg?v=compact" alt="下载安装版" /></a>
 &nbsp;
-<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.2/Arcwell-0.6.2-Portable.zip"><img src="docs/images/download-portable.svg?v=compact" alt="下载便携版 ZIP" /></a>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.3/Arcwell-0.6.3-Portable.zip"><img src="docs/images/download-portable.svg?v=compact" alt="下载便携版 ZIP" /></a>
 </p>
-<p align="center">Windows 11 · x64 · 当前版本 0.6.2</p>
+<p align="center">Windows 11 · x64 · 当前版本 0.6.3</p>
 
 ## Arcwell 是什么
 
@@ -38,7 +38,7 @@ Arcwell 是一款本地优先的 Windows 桌面网页收藏管理工具。你可
 
 ### 安装版（推荐）
 
-[下载安装程序 · Arcwell 0.6.2 Setup.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.2/Arcwell-0.6.2-Setup.exe)
+[下载安装程序 · Arcwell 0.6.3 Setup.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.3/Arcwell-0.6.3-Setup.exe)
 
 下载的是 **EXE 安装程序，无需手动解压**。双击后按向导选择位置并完成安装。程序会放入独立的 Arcwell 文件夹，避免文件散落在目标目录。
 
@@ -46,7 +46,7 @@ Arcwell 是一款本地优先的 Windows 桌面网页收藏管理工具。你可
 
 ### 便携版（可选）
 
-[下载便携版 · Arcwell 0.6.2 Portable.zip](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.2/Arcwell-0.6.2-Portable.zip)
+[下载便携版 · Arcwell 0.6.3 Portable.zip](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.3/Arcwell-0.6.3-Portable.zip)
 
 解压后打开其中的 **Arcwell** 文件夹，双击 **Arcwell.exe**。请保留完整文件夹，移动程序时一起移动。
 
@@ -62,7 +62,7 @@ Arcwell 是一款本地优先的 Windows 桌面网页收藏管理工具。你可
 4. **补充信息**：点击收藏右侧三横线菜单或右键菜单，选择“编辑详情”，修改名称、网址、所属文件夹和备注，完成后保存。
 5. **设置第二份备份**：点击左下角齿轮，在“自动 HTML 备份”中选择自定义备份目录。
 
-左栏只显示最外层目录和默认分区。中央列表中，当前层级的文件夹始终排在链接前面；展开后先显示它的子文件夹，再显示直属链接。文件夹与链接共用卡片布局，文件夹卡片高度较上一版缩小约 20%，文件夹 / 链接数量改为鼠标停留后的轻量提示；展开区用偏白的浅杏色背景、层级边线和轻微缩进区分归属。列表和网格视图均支持嵌套展开，默认浏览时不会把子目录的链接重复铺到外层。
+左栏只显示最外层目录和默认分区。中央列表中，当前层级的文件夹始终排在链接前面；展开后先显示它的子文件夹，再显示直属链接。文件夹与链接共用卡片布局，文件夹与链接卡片均使用紧凑的两行布局，列表高度约为原来的 80%；文件夹数量和链接的详细网址统一改为鼠标停留后的轻量提示；展开区用偏白的浅杏色背景、层级边线和轻微缩进区分归属。列表和网格视图均支持嵌套展开，默认浏览时不会把子目录的链接重复铺到外层。
 
 单击文件夹卡片、标题或展开箭头均可展开 / 收起；键盘可用 Enter、空格及卡片上的左右方向键操作。展开带柔和回弹，系统启用“减少动态效果”时会自动减少动画。文件夹菜单支持在当前目录添加网址、新建子目录、重命名与移除。
 
@@ -136,7 +136,7 @@ Arcwell 在保存收藏修改后，同步更新两份固定名称的 **网址备
 
 首次从旧版升级，或无法使用应用内更新时，可手动下载更新程序：
 
-[下载 Arcwell 0.6.2 更新程序 · Update.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.2/Arcwell-0.6.2-Update.exe)
+[下载 Arcwell 0.6.3 更新程序 · Update.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.3/Arcwell-0.6.3-Update.exe)
 
 先保存正在编辑的内容，再运行更新程序。程序会自动使用原安装位置，后台更新后重新打开 Arcwell 并显示结果，**无需先卸载旧版或重新选择目录**。便携版可将更新程序放到 Arcwell.exe 所在文件夹后运行。找不到原程序时会停止，不向新的默认位置安装。后续可继续通过应用内“检查更新”更新。
 
@@ -184,7 +184,7 @@ npm run build
 
 技术栈为 Electron、原生 HTML / CSS / JavaScript、htmlparser2 与 electron-builder。渲染器使用沙箱，文件保存、导入、备份、默认浏览器调用与更新下载由主进程负责。代码按界面、业务规则、存储、备份、图标和更新模块拆分。
 
-`npm run build` 生成安装程序、更新程序及便携 ZIP，产物位于 `release/0.6.2`。更详细的开发结构、数据恢复和发布流程见：
+`npm run build` 生成安装程序、更新程序及便携 ZIP，产物位于 `release/0.6.3`。更详细的开发结构、数据恢复和发布流程见：
 
 - [开发与数据说明](docs/DEVELOPMENT.md)
 - [更新与发布](docs/UPDATING.md)

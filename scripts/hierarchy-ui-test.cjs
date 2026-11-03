@@ -100,7 +100,7 @@ async function capture(app, name) {
     assert.ok(folderHeight >= 60 && folderHeight <= 62, 'Folder rows occupy about 80% of 76px.');
     report.folderHeight = folderHeight;
     await heading('A 项目资料').hover({ position: { x: 70, y: 20 } });
-    const hint = page.locator('#folder-hint');
+    const hint = page.locator('#collection-hint');
     await hint.waitFor({ state: 'visible' });
     assert.equal(await hint.textContent(), '1 个文件夹 · 2 个链接');
     const hintBox = await hint.boundingBox();
