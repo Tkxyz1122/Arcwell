@@ -156,6 +156,7 @@ function mergeBookmarks(library, imported) {
     urls = new Set(next.bookmarks.map((item) => item.url));
   for (const folder of next.folders)
     if (folder.id !== 'inbox') folderIndex.set(folderTree.key(folderTree.path(folder)), folder.id);
+  const addedAt = new Date().toISOString();
   const ensureFolder = (parts) => {
     if (!parts.length) return 'inbox';
     const key = folderTree.key(parts);
@@ -169,7 +170,7 @@ function mergeBookmarks(library, imported) {
     if (next.folders.length >= 300) throw new Error('导入后文件夹将超过 300 个，未修改原收藏。');
     const name = parts.join(' / ').slice(0, 60);
     const id = randomUUID();
-    next.folders.push({ id, name, importPath: parts });
+    next.folders.push({ id, name, importPath: parts, createdAt: addedAt });
     folderIndex.set(key, id);
     return id;
   };

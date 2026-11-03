@@ -161,6 +161,8 @@ async function launch(directory) {
     application = null;
     application = await launch(directory);
     const restarted = await application.firstWindow();
+    await restarted.waitForSelector('.folder-card');
+    await restarted.locator('#folders .nav-item').filter({ hasText: '设计灵感' }).click();
     await restarted.waitForSelector('.bookmark-row');
     await restarted.locator('.bookmark-actions button').last().click();
     await restarted.getByRole('button', { name: '编辑详情', exact: true }).click();
@@ -263,6 +265,7 @@ async function launch(directory) {
     await restarted.waitForFunction(() =>
       document.querySelector('#toast').textContent.includes('已导入'),
     );
+    await restarted.fill('#search', '://');
     assert.equal(await restarted.locator('.bookmark-row').count(), expectedCount);
     assert.equal(await restarted.locator('#inspector').isVisible(), false);
     const primaryHtml = await fs.readFile(
@@ -279,6 +282,7 @@ async function launch(directory) {
     await restarted.waitForFunction(() =>
       document.querySelector('#toast').textContent.includes('已导入 0 条收藏'),
     );
+    await restarted.fill('#search', '://');
     assert.equal(await restarted.locator('.bookmark-row').count(), expectedCount);
     // Render the same visual examples as the approved mockup, entirely offline.
     await restarted.evaluate(async () => {
@@ -310,6 +314,8 @@ async function launch(directory) {
       }
     });
     await restarted.reload();
+    await restarted.waitForSelector('.folder-card');
+    await restarted.fill('#search', '://');
     await restarted.waitForSelector('.bookmark-row');
     assert.equal(await restarted.locator('#inspector').isVisible(), false);
     await screenshot(application, 'arcwell-compact-collapsed.png');
@@ -339,18 +345,20 @@ async function launch(directory) {
     await restarted.locator('#folder-menu').click();
     await screenshot(application, 'arcwell-folder-menu.png');
     await restarted.keyboard.press('Escape');
-    await restarted.getByRole('button', { name: '工作常用', exact: true }).click();
+    await restarted.fill('#search', '');
+    await restarted.locator('#folders .nav-item').filter({ hasText: '工作常用' }).click();
     await restarted.locator('#folder-menu').click();
     await restarted.getByRole('button', { name: '新建子文件夹', exact: true }).click();
     await restarted.fill('#folder-name', '项目资料');
     await restarted.click('#modal-submit');
-    const childControl = restarted.getByRole('button', {
-      name: '工作常用 / 项目资料',
-      exact: true,
-    });
-    assert.equal(await childControl.locator('.nav-label').textContent(), '项目资料');
-    await childControl.click();
-    await restarted.locator('#folder-menu').click();
+    const childControl = restarted.locator('.folder-title[title="工作常用 / 项目资料"]');
+    assert.equal(await childControl.textContent(), '项目资料');
+    await childControl
+      .locator('..')
+      .locator('..')
+      .locator('.bookmark-actions button')
+      .last()
+      .click();
     await restarted.getByRole('button', { name: '新建子文件夹', exact: true }).click();
     await restarted.fill('#folder-name', '参考链接');
     await restarted.click('#modal-submit');
@@ -362,31 +370,33 @@ async function launch(directory) {
       await window.arcwell.change('edit', { ...bookmark, folderId: folder.id });
     });
     await restarted.reload();
-    await restarted.waitForSelector('.bookmark-row');
-    await restarted.getByRole('button', { name: '工作常用', exact: true }).click();
-    assert.equal(await restarted.locator('.bookmark-row').count(), 2);
+    await restarted.waitForSelector('.folder-card');
+    await restarted.locator('#folders .nav-item').filter({ hasText: '工作常用' }).click();
+    assert.equal(await restarted.locator('.bookmark-row:visible').count(), 1);
     assert.equal(
-      await restarted.getByRole('button', { name: '工作常用 / 项目资料', exact: true }).count(),
+      await restarted.locator('#folders .nav-item[title="工作常用 / 项目资料"]').count(),
       0,
     );
-    await restarted.getByRole('button', { name: '展开 工作常用', exact: true }).click();
-    await restarted.getByRole('button', { name: '展开 工作常用 / 项目资料', exact: true }).click();
+    await restarted.locator('.folder-title[title="工作常用 / 项目资料"]').click();
+    await restarted.locator('.folder-title[title="工作常用 / 项目资料 / 参考链接"]').click();
+    assert.equal(await restarted.locator('.bookmark-row:visible').count(), 2);
     await restarted.locator('#folder-menu').click();
     await restarted.getByRole('button', { name: '重命名', exact: true }).click();
     await restarted.fill('#folder-name', '工作项目');
     await restarted.click('#modal-submit');
     await restarted.waitForSelector('#modal', { state: 'hidden' });
-    const grandchildControl = restarted.getByRole('button', {
-      name: '工作项目 / 项目资料 / 参考链接',
-      exact: true,
-    });
+    const grandchildControl = restarted.locator(
+      '.folder-title[title="工作项目 / 项目资料 / 参考链接"]',
+    );
     assert.equal(await grandchildControl.count(), 1);
     assert.equal(await grandchildControl.getAttribute('title'), '工作项目 / 项目资料 / 参考链接');
     assert.ok(
       await grandchildControl.evaluate(
         (node) =>
           node.getBoundingClientRect().left >
-          document.querySelector('.folder-row .nav-item').getBoundingClientRect().left,
+          document
+            .querySelector('#bookmark-list > .folder-group .folder-title')
+            .getBoundingClientRect().left,
       ),
     );
     await screenshot(application, 'arcwell-folder-tree.png');
@@ -407,6 +417,7 @@ async function launch(directory) {
     assert.ok(!afterTreeRemoval.folders.some((item) => item.importPath?.[0] === '工作项目'));
     await restarted.locator('#navigation button').first().click();
     assert.equal(await restarted.locator('#folder-menu').isVisible(), false);
+    await restarted.fill('#search', 'ChatGPT');
     await restarted
       .locator('.bookmark-row')
       .filter({ hasText: 'ChatGPT' })

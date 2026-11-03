@@ -58,6 +58,11 @@ function validateLibrary(library) {
         ))
     )
       throw new Error('导入文件夹路径无效。');
+    if (
+      folder.createdAt !== undefined &&
+      (typeof folder.createdAt !== 'string' || !Number.isFinite(Date.parse(folder.createdAt)))
+    )
+      throw new Error('文件夹添加时间无效。');
     if (ids.has(folder.id)) throw new Error('文件夹标识重复。');
     ids.add(folder.id);
   }
@@ -194,6 +199,7 @@ function mutate(library, action, payload = {}) {
         id: randomUUID(),
         name: parts.join(' / ').slice(0, 60),
         importPath: parts,
+        createdAt: new Date().toISOString(),
       });
       break;
     }

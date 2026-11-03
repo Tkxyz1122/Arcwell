@@ -1,5 +1,5 @@
 <p>
-<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Setup.exe">下载安装版</a> · <a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Portable.zip">下载便携版 ZIP</a>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.0/Arcwell-0.6.0-Setup.exe">下载安装版</a> · <a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.0/Arcwell-0.6.0-Portable.zip">下载便携版 ZIP</a>
 </p>
 
 **安装版**：运行安装程序，按向导完成安装。
@@ -8,8 +8,10 @@
 
 **检查更新**：应用左下角齿轮 → 应用更新 → 检查更新，在应用内下载并安装后续版本。
 
-**手动更新（备用）**：[下载更新程序](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Update.exe)，自动使用原安装目录，后台更新，无需卸载。
+**手动更新（备用）**：[下载更新程序](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.0/Arcwell-0.6.0-Update.exe)，自动使用原安装目录，后台更新，无需卸载。
 
-详情栏的名称、网址、所属文件夹统一为上方标签、下方全宽控件，标签与输入框之间保持紧凑间距。网址框使用与备注一致的样式，长链接可自动折行查看和编辑。
+左侧仅显示最外层文件夹，子文件夹移入中央收藏列表，和网页采用一致的卡片布局。同层文件夹始终置顶，支持名称 / 添加时间的升序、降序排列。
 
-保留网站头像与渐变资料卡、双向排序、原目录后台更新和应用内结果弹窗。
+单击文件夹逐层展开内容，展开区域使用浅绿色底色、层级边线与柔和回弹动画区分归属，系统减少动态效果设置也会生效。列表和网格均可使用；文件夹菜单可直接添加网址或子目录。
+
+搜索、最近添加和星标筛选直接显示匹配链接。已有收藏、目录 ID、备注、星标与 HTML 备份保持兼容；更新仍在原目录后台完成，无需卸载。

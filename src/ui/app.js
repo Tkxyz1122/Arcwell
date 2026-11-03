@@ -26,6 +26,7 @@ const paths = {
 const $ = (id) => document.getElementById(id);
 const api = window.arcwell;
 const folderTree = window.arcwellFolders;
+const collectionView = window.arcwellCollectionView;
 const state = {
   library: { folders: [], bookmarks: [] },
   scope: 'all',
@@ -40,8 +41,7 @@ const state = {
   icons: new Map(),
   iconRequests: new Set(),
   backup: null,
-  collapsedFolders: new Set(),
-  knownFolders: new Set(),
+  expandedFolders: new Set(),
 };
 function setDirty(dirty) {
   state.dirty = dirty;
@@ -191,53 +191,28 @@ function scopeTitle() {
         ? '星标收藏'
         : folderName(state.scope);
 }
-function filtered() {
-  const selectedFolder = state.library.folders.find((folder) => folder.id === state.scope);
-  const scopeIds = selectedFolder
-    ? new Set(
-        state.library.folders
-          .filter((folder) =>
-            selectedFolder.id === 'inbox'
-              ? folder.id === 'inbox'
-              : folder.id !== 'inbox' &&
-                folderTree.within(folderTree.path(folder), folderTree.path(selectedFolder)),
-          )
-          .map((folder) => folder.id),
-      )
-    : null;
-  let bookmarks = state.library.bookmarks.filter((bookmark) => {
-    if (state.scope === 'stars' && !bookmark.starred) return false;
-    if (scopeIds && !scopeIds.has(bookmark.folderId)) return false;
-    if (state.starred && !bookmark.starred) return false;
-    return `${bookmark.title} ${bookmark.url} ${bookmark.note}`
-      .toLocaleLowerCase()
-      .includes(state.query.toLocaleLowerCase());
+function currentCollection() {
+  return collectionView.create(state.library, {
+    scope: state.scope,
+    query: state.query,
+    starred: state.starred,
+    sort: state.sort,
+    direction: state.sortDirections[state.sort],
   });
-  // The recent scope always contains the latest 30, regardless of display direction.
-  if (state.scope === 'recent') {
-    bookmarks.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-    bookmarks = bookmarks.slice(0, 30);
-  }
-  const direction = state.sortDirections[state.sort] === 'asc' ? 1 : -1;
-  bookmarks.sort((a, b) => {
-    const order =
-      state.sort === 'name'
-        ? a.title.localeCompare(b.title, 'zh-CN')
-        : Date.parse(a.createdAt) - Date.parse(b.createdAt);
-    return (
-      direction * (order || a.title.localeCompare(b.title, 'zh-CN') || a.id.localeCompare(b.id))
-    );
-  });
-  return bookmarks;
+}
+function revealFolder(id) {
+  const view = currentCollection();
+  for (const ancestor of view.ancestors(id)) state.expandedFolders.add(ancestor);
 }
 async function setScope(scope) {
   if (!(await discardDraft())) return;
   state.scope = scope;
+  $('bookmark-list').scrollTop = 0;
   state.starred = false;
   state.selected = null;
   refresh();
 }
-function renderNavigation() {
+function renderNavigation(view = currentCollection()) {
   const starredCount = state.library.bookmarks.filter((item) => item.starred).length;
   $('navigation').replaceChildren();
   for (const [id, label, glyph, count] of [
@@ -251,66 +226,24 @@ function renderNavigation() {
     $('navigation').append(control);
   }
   $('folders').replaceChildren();
-  const treeEntries = folderTree.entries(state.library.folders);
-  const byId = new Map(state.library.folders.map((folder) => [folder.id, folderTree.path(folder)]));
   const counts = new Map();
-  let inboxCount = 0;
   for (const bookmark of state.library.bookmarks) {
-    if (bookmark.folderId === 'inbox') {
-      inboxCount++;
-      continue;
-    }
-    const parts = byId.get(bookmark.folderId);
-    for (let depth = 1; depth <= parts.length; depth++) {
-      const key = folderTree.key(parts.slice(0, depth));
-      counts.set(key, (counts.get(key) || 0) + 1);
-    }
+    const root = view.rootOf(bookmark.folderId);
+    counts.set(root, (counts.get(root) || 0) + 1);
   }
-  for (const { folder, depth, parts } of treeEntries) {
-    if (
-      treeEntries.some(
-        (entry) =>
-          entry.folder.id !== 'inbox' &&
-          entry.parts.length < parts.length &&
-          folderTree.within(parts, entry.parts) &&
-          state.collapsedFolders.has(entry.folder.id),
-      )
-    )
-      continue;
-    const row = element('div', `folder-row ${state.scope === folder.id ? 'active' : ''}`);
-    row.style.setProperty('--folder-depth', Math.min(depth, 8));
-    const hasChildren =
-      folder.id !== 'inbox' &&
-      treeEntries.some(
-        (entry) => entry.parts.length === parts.length + 1 && folderTree.within(entry.parts, parts),
-      );
-    const toggle = iconButton(
-      'chevron',
-      `${state.collapsedFolders.has(folder.id) ? '展开' : '收起'} ${parts.join(' / ')}`,
-    );
-    toggle.classList.add('folder-toggle');
-    toggle.classList.toggle('leaf', !hasChildren);
-    toggle.disabled = !hasChildren;
-    if (hasChildren)
-      toggle.setAttribute('aria-expanded', String(!state.collapsedFolders.has(folder.id)));
-    toggle.onclick = () => {
-      if (state.collapsedFolders.has(folder.id)) state.collapsedFolders.delete(folder.id);
-      else state.collapsedFolders.add(folder.id);
-      renderNavigation();
-    };
+  for (const { folder, parts } of view.roots) {
+    const active = view.rootOf(state.scope) === folder.id;
+    const row = element('div', 'folder-row' + (active ? ' active' : ''));
     const control = button(parts.at(-1), 'folder', 'nav-item');
     control.title = parts.join(' / ');
     control.setAttribute('aria-label', control.title);
+    control.setAttribute('aria-current', active ? 'page' : 'false');
     control.querySelector('span').className = 'nav-label';
-    control.append(
-      element(
-        'span',
-        'nav-count',
-        folder.id === 'inbox' ? inboxCount : counts.get(folderTree.key(parts)) || 0,
-      ),
-    );
+    // Sidebar counts always describe the full library, regardless of list filters.
+    const count = counts.get(folder.id) || 0;
+    control.append(element('span', 'nav-count', count));
     control.onclick = () => setScope(folder.id);
-    row.append(toggle, control);
+    row.append(control);
     $('folders').append(row);
   }
   const folder = state.library.folders.find((item) => item.id === state.scope);
@@ -320,12 +253,7 @@ function renderNavigation() {
   if (!menu.hidden) {
     menu.title = `管理文件夹 ${folder.name}`;
     menu.setAttribute('aria-label', menu.title);
-    menu.onclick = (event) =>
-      openMenu(event, [
-        ['新建子文件夹', () => addFolder(folder.id)],
-        ['重命名', () => renameFolder(folder)],
-        ['移除文件夹', () => removeFolder(folder)],
-      ]);
+    menu.onclick = (event) => folderMenu(event, folder);
   }
 }
 function siteIcon(bookmark, large = false) {
@@ -385,6 +313,14 @@ async function selectBookmark(id) {
     .forEach((row) => row.classList.toggle('selected', row.dataset.id === id));
   renderInspector();
 }
+function folderMenu(event, folder) {
+  openMenu(event, [
+    ['新建子文件夹', () => addFolder(folder.id)],
+    ['添加网址', () => showAdd(folder.id)],
+    ['重命名', () => renameFolder(folder)],
+    ['移除文件夹', () => removeFolder(folder)],
+  ]);
+}
 function bookmarkMenu(event, bookmark) {
   openMenu(event, [
     ['打开网页', () => run(() => api.open(bookmark.id))],
@@ -394,13 +330,177 @@ function bookmarkMenu(event, bookmark) {
     ['移除收藏', () => removeBookmark(bookmark)],
   ]);
 }
-function renderList() {
+function bookmarkRow(bookmark) {
+  const row = element(
+    'article',
+    `collection-row bookmark-row ${state.selected === bookmark.id ? 'selected' : ''}`,
+  );
+  row.dataset.id = bookmark.id;
+  row.tabIndex = 0;
+  row.setAttribute('aria-label', `${bookmark.title}，单击打开网页，菜单编辑详情`);
+  row.onclick = (event) => {
+    if (event.button !== 0 || event.detail > 1) return;
+    if (event.target.closest('button, a, input, select, textarea, .bookmark-actions, .folder-chip'))
+      return;
+    run(() => api.open(bookmark.id));
+  };
+  row.onkeydown = (event) => {
+    if (event.target === row && event.key === 'Enter') run(() => api.open(bookmark.id));
+  };
+  row.oncontextmenu = (event) => {
+    event.preventDefault();
+    bookmarkMenu(event, bookmark);
+  };
+  row.append(siteIcon(bookmark));
+  const copy = element('div', 'bookmark-copy');
+  const title = button(bookmark.title, null, 'bookmark-title');
+  title.title = '单击使用默认浏览器打开，通过菜单编辑详情';
+  title.innerHTML = '';
+  title.append(element('span', '', bookmark.title));
+  title.onclick = (event) => {
+    event.stopPropagation();
+    if (event.detail <= 1) run(() => api.open(bookmark.id));
+  };
+  copy.append(
+    title,
+    element('span', 'bookmark-domain', new URL(bookmark.url).hostname),
+    element('p', 'bookmark-note', bookmark.note || '通过菜单编辑详情，添加你的备注'),
+  );
+  row.append(copy);
+  const chip = element('div', 'folder-chip');
+  chip.innerHTML = icon('folder');
+  chip.append(element('span', '', folderName(bookmark.folderId)));
+  row.append(chip);
+  const actions = element('div', 'bookmark-actions');
+  const star = iconButton('star', bookmark.starred ? '取消星标' : '加入星标');
+  star.classList.toggle('starred', bookmark.starred);
+  star.setAttribute('aria-pressed', bookmark.starred);
+  star.onclick = (event) => {
+    event.stopPropagation();
+    toggleStar(bookmark.id);
+  };
+  const more = iconButton('more', `管理 ${bookmark.title}`);
+  more.onclick = (event) => {
+    event.stopPropagation();
+    bookmarkMenu(event, bookmark);
+  };
+  actions.append(star, more);
+  row.append(actions);
+  return row;
+}
+function folderGroup(entry, view, depth = 0) {
+  const { folder, parts } = entry;
+  const group = element('section', 'folder-group');
+  group.dataset.folderId = folder.id;
+  group.style.setProperty('--nested-inset', depth < 3 ? '8px' : '0px');
+  group.style.setProperty('--nested-padding', depth < 3 ? '4px' : '0px');
+  group.style.setProperty('--nested-border', depth < 3 ? '2px' : '1px');
+  const heading = element('article', 'collection-row folder-card');
+  heading.tabIndex = 0;
+  const folderIcon = element('div', 'website-icon folder-icon');
+  folderIcon.innerHTML = icon('folder');
+  const copy = element('div', 'bookmark-copy');
+  const title = button(parts.at(-1), null, 'folder-title');
+  title.title = parts.join(' / ');
+  const childCount = view.children(folder.id).folders.length;
+  const count = view.counts.get(folder.id) || 0;
+  copy.append(
+    title,
+    element('span', 'bookmark-domain', childCount + ' 个文件夹 · ' + count + ' 个链接'),
+    element('p', 'bookmark-note', '单击展开，查看下一级内容'),
+  );
+  const actions = element('div', 'bookmark-actions');
+  const toggle = iconButton('chevron', '展开 ' + parts.join(' / '));
+  toggle.classList.add('folder-expand');
+  const more = iconButton('more', '管理文件夹 ' + parts.join(' / '));
+  more.onclick = (event) => {
+    event.stopPropagation();
+    folderMenu(event, folder);
+  };
+  actions.append(toggle, more);
+  heading.append(folderIcon, copy, actions);
+  const reveal = element('div', 'folder-reveal');
+  reveal.id = 'contents-' + folder.id;
+  const clip = element('div', 'folder-clip');
+  const contents = element('div', 'folder-contents');
+  contents.setAttribute('role', 'group');
+  contents.setAttribute('aria-label', parts.join(' / ') + ' 的内容');
+  clip.append(contents);
+  reveal.append(clip);
+  let populated = false;
+  const setOpen = (open, animate = false) => {
+    if (open && !populated) {
+      appendCollection(contents, view.children(folder.id), view, depth + 1);
+      populated = true;
+    }
+    if (!open && contents.contains(document.activeElement)) heading.focus({ preventScroll: true });
+    if (animate && open) reveal.getBoundingClientRect();
+    group.classList.toggle('is-expanded', open);
+    group.classList.toggle('expanding', open && animate);
+    reveal.inert = !open;
+    reveal.setAttribute('aria-hidden', String(!open));
+    for (const control of [heading, title, toggle]) {
+      control.setAttribute('aria-expanded', String(open));
+      control.setAttribute('aria-controls', reveal.id);
+      control.setAttribute('aria-label', (open ? '收起 ' : '展开 ') + parts.join(' / '));
+    }
+    toggle.title = (open ? '收起 ' : '展开 ') + parts.join(' / ');
+    copy.querySelector('.bookmark-note').textContent = open
+      ? '内容已展开，单击收起'
+      : '单击展开文件夹中的内容';
+  };
+  const activate = () => {
+    const open = !state.expandedFolders.has(folder.id);
+    if (open) state.expandedFolders.add(folder.id);
+    else state.expandedFolders.delete(folder.id);
+    setOpen(open, true);
+  };
+  heading.onclick = (event) => {
+    if (event.detail > 1 || event.button !== 0 || event.target.closest('button')) return;
+    activate();
+  };
+  for (const control of [title, toggle])
+    control.onclick = (event) => {
+      event.stopPropagation();
+      if (event.detail <= 1) activate();
+    };
+  heading.onkeydown = (event) => {
+    if (event.target !== heading) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      activate();
+    } else if (event.key === 'ArrowRight' && !state.expandedFolders.has(folder.id)) {
+      event.preventDefault();
+      activate();
+    } else if (event.key === 'ArrowLeft' && state.expandedFolders.has(folder.id)) {
+      event.preventDefault();
+      activate();
+    }
+  };
+  heading.oncontextmenu = (event) => folderMenu(event, folder);
+  contents.addEventListener('animationend', (event) => {
+    if (event.target === contents) group.classList.remove('expanding');
+  });
+  group.append(heading, reveal);
+  setOpen(state.expandedFolders.has(folder.id));
+  return group;
+}
+function appendCollection(container, items, view, depth = 0) {
+  for (const entry of items.folders) container.append(folderGroup(entry, view, depth));
+  for (const bookmark of items.bookmarks) container.append(bookmarkRow(bookmark));
+  if (!items.folders.length && !items.bookmarks.length)
+    container.append(
+      element('p', 'folder-empty', '这个文件夹还是空的，可通过文件夹菜单添加网址或子文件夹。'),
+    );
+}
+function renderList(view = currentCollection()) {
   const list = $('bookmark-list');
+  const scrollTop = list.scrollTop;
   list.classList.toggle('grid', state.view === 'grid');
   list.replaceChildren();
-  const bookmarks = filtered();
-  $('result-count').textContent = bookmarks.length;
-  if (!bookmarks.length) {
+  const items = view.flat ? { folders: [], bookmarks: view.bookmarks } : view.children(view.parent);
+  $('result-count').textContent = view.bookmarks.length;
+  if (!items.folders.length && !items.bookmarks.length) {
     const empty = element('div', 'empty');
     empty.innerHTML = icon(state.query ? 'search' : 'bookmark');
     empty.append(
@@ -410,78 +510,19 @@ function renderList() {
         '',
         state.query
           ? '试试网站名称、网址或备注里的其他关键词。'
-          : '粘贴第一个网址，建立属于你的收藏空间。文件夹让每一条链接井井有条。',
+          : '添加网址或新建子文件夹，把值得保留的网页整理在这里。',
       ),
     );
     if (!state.query) {
-      const control = button('添加第一个网址', 'plus', 'primary');
-      control.onclick = showAdd;
-      empty.append(control);
+      const add = button('添加第一个网址', 'plus', 'primary');
+      add.onclick = showAdd;
+      empty.append(add);
     }
     list.append(empty);
-    return;
-  }
-  for (const bookmark of bookmarks) {
-    const row = element(
-      'article',
-      `bookmark-row ${state.selected === bookmark.id ? 'selected' : ''}`,
-    );
-    row.dataset.id = bookmark.id;
-    row.tabIndex = 0;
-    row.setAttribute('aria-label', `${bookmark.title}，单击打开网页，菜单编辑详情`);
-    row.onclick = (event) => {
-      if (event.button !== 0 || event.detail > 1) return;
-      if (
-        event.target.closest('button, a, input, select, textarea, .bookmark-actions, .folder-chip')
-      )
-        return;
-      run(() => api.open(bookmark.id));
-    };
-    row.onkeydown = (event) => {
-      if (event.target === row && event.key === 'Enter') run(() => api.open(bookmark.id));
-    };
-    row.oncontextmenu = (event) => {
-      event.preventDefault();
-      bookmarkMenu(event, bookmark);
-    };
-    row.append(siteIcon(bookmark));
-    const copy = element('div', 'bookmark-copy');
-    const title = button(bookmark.title, null, 'bookmark-title');
-    title.title = '单击使用默认浏览器打开，通过菜单编辑详情';
-    title.innerHTML = '';
-    title.append(element('span', '', bookmark.title));
-    title.onclick = (event) => {
-      event.stopPropagation();
-      if (event.detail <= 1) run(() => api.open(bookmark.id));
-    };
-    copy.append(
-      title,
-      element('span', 'bookmark-domain', new URL(bookmark.url).hostname),
-      element('p', 'bookmark-note', bookmark.note || '通过菜单编辑详情，添加你的备注'),
-    );
-    row.append(copy);
-    const chip = element('div', 'folder-chip');
-    chip.innerHTML = icon('folder');
-    chip.append(element('span', '', folderName(bookmark.folderId)));
-    row.append(chip);
-    const actions = element('div', 'bookmark-actions');
-    const star = iconButton('star', bookmark.starred ? '取消星标' : '加入星标');
-    star.classList.toggle('starred', bookmark.starred);
-    star.setAttribute('aria-pressed', bookmark.starred);
-    star.onclick = (event) => {
-      event.stopPropagation();
-      toggleStar(bookmark.id);
-    };
-    const more = iconButton('more', `管理 ${bookmark.title}`);
-    more.onclick = (event) => {
-      event.stopPropagation();
-      bookmarkMenu(event, bookmark);
-    };
-    actions.append(star, more);
-    row.append(actions);
-    list.append(row);
-  }
+  } else appendCollection(list, items, view);
+  list.scrollTop = scrollTop;
 }
+
 function field(label, input) {
   const wrapper = element('label', 'field', label);
   wrapper.append(input);
@@ -625,18 +666,19 @@ function renderInspector() {
   pane.append(form);
 }
 function refresh(details = true) {
-  for (const folder of state.library.folders) {
-    if (!state.knownFolders.has(folder.id)) state.collapsedFolders.add(folder.id);
-    state.knownFolders.add(folder.id);
-  }
-  renderNavigation();
+  const valid = new Set(state.library.folders.map((folder) => folder.id));
+  for (const id of state.expandedFolders) if (!valid.has(id)) state.expandedFolders.delete(id);
+  if (!['all', 'recent', 'stars'].includes(state.scope) && !valid.has(state.scope))
+    state.scope = 'inbox';
+  const view = currentCollection();
+  renderNavigation(view);
   $('page-title').textContent = scopeTitle();
   $('breadcrumb-name').textContent = scopeTitle();
   $('all-tab').classList.toggle('active', !state.starred);
   $('star-tab').classList.toggle('active', state.starred);
   $('list-view').classList.toggle('active', state.view === 'list');
   $('grid-view').classList.toggle('active', state.view === 'grid');
-  renderList();
+  renderList(view);
   if (details) renderInspector();
 }
 function applyResult(result, details = true, selectNew = false) {
@@ -663,7 +705,7 @@ function toggleStar(id) {
     }
   });
 }
-async function showAdd() {
+async function showAdd(folderId) {
   if (!(await discardDraft())) return;
   const url = input('add-url', $('quick-url').value, 4096);
   url.placeholder = 'https://example.com';
@@ -672,7 +714,11 @@ async function showAdd() {
   title.placeholder = '留空时使用网站域名';
   const folder = folderSelect(
     'add-folder',
-    state.library.folders.some((item) => item.id === state.scope) ? state.scope : 'inbox',
+    typeof folderId === 'string'
+      ? folderId
+      : state.library.folders.some((item) => item.id === state.scope)
+        ? state.scope
+        : 'inbox',
   );
   await showModal(
     '添加网址',
@@ -685,7 +731,8 @@ async function showAdd() {
         folderId: folder.value,
       });
       setDirty(false);
-      state.scope = folder.value;
+      revealFolder(folder.value);
+      state.scope = currentCollection().rootOf(folder.value);
       state.starred = false;
       state.query = '';
       $('search').value = '';
@@ -769,7 +816,7 @@ async function addFolder(parentId = '') {
     '创建文件夹',
     async () => {
       const result = await api.change('folder-add', { name: name.value, parentId: parent.value });
-      state.collapsedFolders.delete(parent.value);
+      revealFolder(parent.value);
       applyResult(result, !state.dirty);
       toast('文件夹已创建');
     },
@@ -980,8 +1027,7 @@ $('import-bookmarks').onclick = () =>
         state.query = '';
         state.starred = false;
         if (mode === 'replace') {
-          state.collapsedFolders.clear();
-          state.knownFolders.clear();
+          state.expandedFolders.clear();
         }
         $('search').value = '';
         applyResult(result);
@@ -994,6 +1040,7 @@ $('import-bookmarks').onclick = () =>
   });
 $('search').oninput = (event) => {
   state.query = event.target.value;
+  $('bookmark-list').scrollTop = 0;
   renderList();
 };
 function renderSortDirection() {

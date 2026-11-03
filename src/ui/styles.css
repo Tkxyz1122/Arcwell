@@ -245,28 +245,11 @@ small {
   display: flex;
   align-items: center;
   border-radius: var(--radius);
-  padding-left: calc(var(--folder-depth, 0) * 12px);
-}
-.folder-toggle {
-  width: 16px;
-  height: 28px;
-  flex-shrink: 0;
-  padding: 0;
-}
-.folder-toggle svg {
-  width: 12px;
-  height: 12px;
-}
-.folder-toggle[aria-expanded='true'] svg {
-  transform: rotate(90deg);
-}
-.folder-toggle.leaf {
-  visibility: hidden;
 }
 .folder-row .nav-item {
   flex: 1;
-  padding-left: 2px;
-  gap: 7px;
+  padding: 9px 10px;
+  gap: 10px;
 }
 .folder-row.active {
   background: var(--surface-active);
@@ -288,19 +271,19 @@ small {
   color: var(--muted);
   font-size: var(--caption);
 }
-.bookmark-row {
+.collection-row {
   cursor: pointer;
   transition:
     background-color 140ms ease,
     box-shadow 140ms ease;
 }
-.bookmark-row:hover,
-.bookmark-row:focus-visible {
+.collection-row:hover,
+.collection-row:focus-visible {
   background-color: var(--selection);
   box-shadow: inset 3px 0 var(--accent);
   border-radius: var(--radius);
 }
-.bookmark-row:focus-visible {
+.collection-row:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
@@ -556,7 +539,7 @@ main {
   min-height: 0;
   padding: 0 2px;
 }
-.bookmark-row {
+.collection-row {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -564,12 +547,12 @@ main {
   padding: 10px 7px;
   position: relative;
 }
-.bookmark-row.selected {
+.collection-row.selected {
   background: var(--selection);
   border-radius: var(--radius);
   border-bottom-color: transparent;
 }
-.bookmark-row.selected:before {
+.collection-row.selected:before {
   content: '';
   position: absolute;
   left: 0;
@@ -603,7 +586,7 @@ main {
   min-width: 0;
   text-align: left;
 }
-.bookmark-title {
+:is(.bookmark-title, .folder-title) {
   max-width: 100%;
   justify-content: flex-start;
   padding: 0;
@@ -611,7 +594,7 @@ main {
   font-size: var(--body);
   border-radius: 3px;
 }
-.bookmark-title > span {
+:is(.bookmark-title, .folder-title) > span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -810,10 +793,10 @@ main {
 .settings-card .secondary {
   margin-right: 6px;
 }
-.bookmark-row {
+.collection-row {
   cursor: pointer;
 }
-.bookmark-title {
+:is(.bookmark-title, .folder-title) {
   white-space: normal;
 }
 .detail-form {
@@ -899,11 +882,11 @@ main {
 }
 .bookmark-list.grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
   align-content: start;
   gap: 12px;
 }
-.grid .bookmark-row {
+.grid .collection-row {
   border: 1px solid var(--line);
   border-radius: 11px;
   flex-wrap: wrap;
@@ -928,10 +911,10 @@ main {
   -webkit-box-orient: vertical;
   min-height: 32px;
 }
-.grid .bookmark-row.selected:before {
+.grid .collection-row.selected:before {
   display: none;
 }
-.grid .bookmark-row.selected {
+.grid .collection-row.selected {
   border-color: #a2c5b1;
 }
 dialog {
@@ -1061,7 +1044,7 @@ dialog::backdrop {
   .toolbar-left {
     gap: 12px;
   }
-  .bookmark-row {
+  .collection-row {
     gap: 10px;
   }
   .folder-chip {
@@ -1091,7 +1074,7 @@ dialog::backdrop {
   .page-header {
     padding: 16px 0;
   }
-  .bookmark-row {
+  .collection-row {
     padding-top: 10px;
     padding-bottom: 10px;
   }
@@ -1252,4 +1235,119 @@ select option:focus-visible {
   font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif;
   scrollbar-width: thin;
   scrollbar-color: #cdd0cd transparent;
+}
+
+/* Folder content shares link rows; a quiet inset surface communicates ancestry. */
+.folder-group {
+  min-width: 0;
+}
+.folder-icon {
+  background: var(--selection);
+}
+.folder-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.folder-expand svg {
+  transition: transform 320ms cubic-bezier(0.2, 0.9, 0.3, 1.18);
+}
+.folder-group.is-expanded > .folder-card .folder-expand svg {
+  transform: rotate(90deg);
+}
+.folder-group.is-expanded > .folder-card {
+  background: #27876008;
+  border-radius: var(--radius);
+}
+.folder-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 380ms cubic-bezier(0.2, 0.85, 0.28, 1.08),
+    visibility 0s 380ms;
+}
+.folder-group.is-expanded > .folder-reveal {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows 440ms cubic-bezier(0.2, 0.85, 0.28, 1.08),
+    visibility 0s;
+}
+.folder-clip {
+  min-height: 0;
+  overflow: hidden;
+}
+.folder-contents {
+  min-width: 0;
+  margin: 4px 0 8px var(--nested-inset);
+  padding: 3px var(--nested-padding);
+  background: #27876008;
+  border-inline-start: var(--nested-border) solid #27876028;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  transform-origin: top center;
+}
+.folder-group.expanding > .folder-reveal > .folder-clip > .folder-contents {
+  animation: folder-arrive 440ms cubic-bezier(0.2, 0.9, 0.3, 1.12);
+}
+@keyframes folder-arrive {
+  0% {
+    opacity: 0.15;
+    transform: translateY(-7px) scale(0.985);
+  }
+  68% {
+    opacity: 1;
+    transform: translateY(1px) scale(1.003);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.folder-empty {
+  margin: 0;
+  padding: var(--layout-section-block) 10px;
+  color: var(--muted);
+  font-size: var(--caption);
+  line-height: 1.7;
+}
+.bookmark-list.grid > .folder-group.is-expanded {
+  grid-column: 1 / -1;
+}
+.grid .folder-contents {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
+  gap: 10px;
+}
+.grid .folder-contents > .folder-group.is-expanded {
+  grid-column: 1 / -1;
+}
+.grid .folder-empty {
+  grid-column: 1 / -1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .folder-reveal,
+  .folder-group.is-expanded > .folder-reveal,
+  .folder-expand svg {
+    transition-duration: 0.01ms;
+    transition-delay: 0s;
+  }
+  .folder-group.expanding > .folder-reveal > .folder-clip > .folder-contents {
+    animation: none;
+  }
+}
+
+.folder-card .bookmark-actions {
+  margin-left: auto;
+}
+.grid .folder-group.is-expanded > .folder-card {
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 10px 7px;
+  gap: 14px;
+}
+.grid .folder-group.is-expanded > .folder-card .bookmark-copy {
+  flex-basis: auto;
+}
+.grid .folder-group.is-expanded > .folder-card .bookmark-actions {
+  margin-top: 0;
 }

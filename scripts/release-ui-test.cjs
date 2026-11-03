@@ -67,17 +67,18 @@ const root = path.resolve(__dirname, '..');
       }
     });
     await page.reload();
-    await page.waitForSelector('.bookmark-row');
+    await page.waitForSelector('.folder-card');
     assert.equal(
       await page.getByRole('button', { name: '工作常用 / 项目资料', exact: true }).count(),
       0,
     );
-    assert.equal(
-      await page
-        .getByRole('button', { name: '展开 工作常用', exact: true })
-        .getAttribute('aria-expanded'),
-      'false',
-    );
+    assert.deepEqual(await page.locator('#folders .nav-label').allTextContents(), [
+      '默认分区',
+      '工作常用',
+      '设计灵感',
+      '学习资料',
+    ]);
+    await page.locator('#folders .nav-item').filter({ hasText: '工作常用' }).click();
     const importBox = await page.locator('#import-bookmarks').boundingBox();
     const settingsBox = await page.locator('#settings').boundingBox();
     assert.ok(importBox.x + importBox.width <= settingsBox.x && importBox.y === settingsBox.y);
@@ -109,10 +110,12 @@ const root = path.resolve(__dirname, '..');
       await page.screenshot({ path: path.join(screenshots, name) });
     };
     await shot('overview.png');
-    await page.getByRole('button', { name: '展开 工作常用', exact: true }).click();
+    await page.locator('.folder-title[title="工作常用 / 项目资料"]').click();
     assert.equal(
-      await page.getByRole('button', { name: '工作常用 / 项目资料', exact: true }).count(),
-      1,
+      await page
+        .locator('.folder-title[title="工作常用 / 项目资料"]')
+        .getAttribute('aria-expanded'),
+      'true',
     );
     await row.locator('.bookmark-actions button').last().click();
     await page.getByRole('button', { name: '编辑详情', exact: true }).click();
@@ -248,7 +251,7 @@ const root = path.resolve(__dirname, '..');
         !document.querySelector('#detail-form button[type=submit]').textContent.includes('未保存'),
     );
     await page.reload();
-    await page.waitForSelector('.bookmark-row');
+    await page.waitForSelector('.folder-card');
     assert.equal(
       await page.getByRole('button', { name: '工作常用 / 项目资料', exact: true }).count(),
       0,

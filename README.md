@@ -3,11 +3,11 @@
 <p align="center"><img src="assets/icon.svg" width="64" alt="Arcwell" /></p>
 <p align="center"><strong>A quiet home for your bookmarks.</strong><br />把常用网站、工作资料和灵感网页，整理成自己的桌面收藏库。</p>
 <p align="center">
-<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Setup.exe"><img src="docs/images/download-setup.svg?v=compact" alt="下载安装版" /></a>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.0/Arcwell-0.6.0-Setup.exe"><img src="docs/images/download-setup.svg?v=compact" alt="下载安装版" /></a>
 &nbsp;
-<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Portable.zip"><img src="docs/images/download-portable.svg?v=compact" alt="下载便携版 ZIP" /></a>
+<a href="https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.0/Arcwell-0.6.0-Portable.zip"><img src="docs/images/download-portable.svg?v=compact" alt="下载便携版 ZIP" /></a>
 </p>
-<p align="center">Windows 11 · x64 · 当前版本 0.5.5</p>
+<p align="center">Windows 11 · x64 · 当前版本 0.6.0</p>
 
 ## Arcwell 是什么
 
@@ -15,18 +15,18 @@ Arcwell 是一款本地优先的 Windows 桌面网页收藏管理工具。你可
 
 它适合集中管理工作常用网站、项目资料、学习课程、在线工具和待读文章。为一个项目建立文件夹，把文档、参考资料与工具放在一起；给一个网页补上“为什么收藏、下次用在哪里”，让收藏在需要时更容易找回。
 
-界面采用侧边导航、中央收藏列表和按需展开的详情栏：左边切换分类，中间浏览与打开网页，需要编辑时再展开右侧。收藏保存在本地，基础管理功能可离线使用；打开网页时调用系统默认浏览器。
+界面采用侧边导航、中央收藏列表和按需展开的详情栏：左侧仅保留最外层文件夹；子文件夹与网页一起放在中央列表，单击文件夹逐层展开，需要编辑链接时再展开右侧详情。收藏保存在本地，基础管理功能可离线使用；打开网页时调用系统默认浏览器。
 
-![Arcwell 主界面：侧边分类、搜索与收藏列表](docs/images/overview.png)
+![Arcwell 主界面：最外层分类、列表内子文件夹与收藏](docs/images/overview.png)
 
 ## 主要功能
 
 | 功能       | 可以做什么                                                           |
 | ---------- | -------------------------------------------------------------------- |
 | 网址收藏   | 手动添加 HTTP / HTTPS 网址，自定义名称，记录备注和添加星标           |
-| 层级分类   | 创建文件夹与子文件夹，重命名目录，汇总当前分类及子分类的收藏         |
+| 层级分类   | 侧栏仅显示最外层目录；子目录在列表置顶，逐层展开并汇总收藏数量         |
 | 快速打开   | 左键单击收藏容器或标题，通过系统默认浏览器打开；星标、菜单独立操作   |
-| 搜索与筛选 | 按名称、网址和备注搜索，查看最近添加或星标收藏，按添加时间或名称双向排序 |
+| 搜索与筛选 | 按名称、网址和备注搜索，查看最近添加或星标收藏，文件夹与链接按添加时间或名称双向排序 |
 | 两种视图   | 在列表与网格之间切换，鼠标悬停时高亮当前收藏                         |
 | 网站图标   | 读取网站图标并缓存到本地，暂时不可用时显示文字图标                   |
 | 浏览器迁移 | 导入浏览器导出的 HTML 书签，保留文件夹层级，选择合并添加或完全覆盖   |
@@ -38,7 +38,7 @@ Arcwell 是一款本地优先的 Windows 桌面网页收藏管理工具。你可
 
 ### 安装版（推荐）
 
-[下载安装程序 · Arcwell 0.5.5 Setup.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Setup.exe)
+[下载安装程序 · Arcwell 0.6.0 Setup.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.0/Arcwell-0.6.0-Setup.exe)
 
 下载的是 **EXE 安装程序，无需手动解压**。双击后按向导选择位置并完成安装。程序会放入独立的 Arcwell 文件夹，避免文件散落在目标目录。
 
@@ -46,7 +46,7 @@ Arcwell 是一款本地优先的 Windows 桌面网页收藏管理工具。你可
 
 ### 便携版（可选）
 
-[下载便携版 · Arcwell 0.5.5 Portable.zip](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Portable.zip)
+[下载便携版 · Arcwell 0.6.0 Portable.zip](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.0/Arcwell-0.6.0-Portable.zip)
 
 解压后打开其中的 **Arcwell** 文件夹，双击 **Arcwell.exe**。请保留完整文件夹，移动程序时一起移动。
 
@@ -55,12 +55,18 @@ Arcwell 是一款本地优先的 Windows 桌面网页收藏管理工具。你可
 ## 从第一个收藏开始
 
 1. **添加网页**：点击右上角“添加网址”，粘贴网址，填写名称并选择文件夹。
-2. **建立分类**：在左栏新建文件夹，或通过当前文件夹的管理菜单创建子文件夹。目录启动时默认折叠，点击箭头展开。
+2. **建立分类**：在左栏新建最外层文件夹，子文件夹通过列表内文件夹的三横线菜单或当前分类管理菜单创建。单击中央文件夹卡片展开内容，重启后默认收起。
 3. **打开网页**：左键单击收藏容器或标题；也可以聚焦收藏容器后按 Enter。
 4. **补充信息**：点击收藏右侧三横线菜单或右键菜单，选择“编辑详情”，修改名称、网址、所属文件夹和备注，完成后保存。
 5. **设置第二份备份**：点击左下角齿轮，在“自动 HTML 备份”中选择自定义备份目录。
 
-排序栏可选择“添加时间”或“名称排序”，点击旁边的箭头切换升序 / 降序；两种排序分别记住本次使用的方向。“最近添加”始终限定最新 30 条。详情栏以网站图标、名称与柔和绿色渐变资料卡展示网站信息，编辑表单采用标签在上、控件在下的统一布局；网址框可自动折行，便于查看和修改长链接，底部保留适度留白。
+左栏只显示最外层目录和默认分区。中央列表中，当前层级的文件夹始终排在链接前面；展开后先显示它的子文件夹，再显示直属链接。文件夹与链接共用卡片布局，展开区用浅绿色背景、层级边线和轻微缩进区分归属。列表和网格视图均支持嵌套展开，默认浏览时不会把子目录的链接重复铺到外层。
+
+单击文件夹卡片、标题或展开箭头均可展开 / 收起；键盘可用 Enter、空格及卡片上的左右方向键操作。展开带柔和回弹，系统启用“减少动态效果”时会自动减少动画。文件夹菜单支持在当前目录添加网址、新建子目录、重命名与移除。
+
+搜索会直接显示当前分类及子分类内匹配的链接；“最近添加”和星标筛选也直接显示链接，深层网页无需逐层展开才能找到。“所有链接”的数字包含当前范围内子文件夹中的链接。
+
+排序栏可选择“添加时间”或“名称排序”，点击旁边的箭头切换升序 / 降序；每一层的文件夹和链接分别排序，文件夹保持置顶；两种排序分别记住本次使用的方向。旧版未记录文件夹时间的目录，按原有创建 / 导入顺序稳定排序。“最近添加”始终限定最新 30 条。详情栏以网站图标、名称与柔和绿色渐变资料卡展示网站信息，编辑表单采用标签在上、控件在下的统一布局；网址框可自动折行，便于查看和修改长链接，底部保留适度留白。
 
 顶部网址输入框用于**直接打开输入的网址**，不会自动添加收藏。需要保存到收藏库时，请使用“添加网址”。长文件夹名称被省略后，鼠标悬停可查看完整路径。
 
@@ -128,7 +134,7 @@ Arcwell 在保存收藏修改后，同步更新两份固定名称的 **网址备
 
 首次从旧版升级，或无法使用应用内更新时，可手动下载更新程序：
 
-[下载 Arcwell 0.5.5 更新程序 · Update.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.5.5/Arcwell-0.5.5-Update.exe)
+[下载 Arcwell 0.6.0 更新程序 · Update.exe](https://github.com/Tkxyz1122/Arcwell/releases/download/v0.6.0/Arcwell-0.6.0-Update.exe)
 
 先保存正在编辑的内容，再运行更新程序。程序会自动使用原安装位置，后台更新后重新打开 Arcwell 并显示结果，**无需先卸载旧版或重新选择目录**。便携版可将更新程序放到 Arcwell.exe 所在文件夹后运行。找不到原程序时会停止，不向新的默认位置安装。后续可继续通过应用内“检查更新”更新。
 
@@ -176,7 +182,7 @@ npm run build
 
 技术栈为 Electron、原生 HTML / CSS / JavaScript、htmlparser2 与 electron-builder。渲染器使用沙箱，文件保存、导入、备份、默认浏览器调用与更新下载由主进程负责。代码按界面、业务规则、存储、备份、图标和更新模块拆分。
 
-`npm run build` 生成安装程序、更新程序及便携 ZIP，产物位于 `release/0.5.5`。更详细的开发结构、数据恢复和发布流程见：
+`npm run build` 生成安装程序、更新程序及便携 ZIP，产物位于 `release/0.6.0`。更详细的开发结构、数据恢复和发布流程见：
 
 - [开发与数据说明](docs/DEVELOPMENT.md)
 - [更新与发布](docs/UPDATING.md)

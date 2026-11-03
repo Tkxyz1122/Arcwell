@@ -36,15 +36,16 @@ npm run format:check
 npm run build
 ```
 
-产物位于 `release/0.5.5`：Setup.exe 是安装向导，Portable.zip 是可选的便携版；Update.exe 供应用内更新及手动更新备用。便携运行需保留完整 Arcwell 文件夹。依赖由 npm ci 根据锁文件恢复。
+产物位于 `release/0.6.0`：Setup.exe 是安装向导，Portable.zip 是可选的便携版；Update.exe 供应用内更新及手动更新备用。便携运行需保留完整 Arcwell 文件夹。依赖由 npm ci 根据锁文件恢复。
 
-界面测试：`npm run test:sorting`（双向排序、最新30条范围、资料卡与留白）、`npm run test:ui`、`npm run test:import`、`node scripts/release-ui-test.cjs`，均使用隔离数据。原生更新器测试需指定只读旧版基线，见 [更新与发布](UPDATING.md)。
+界面测试：`npm run test:hierarchy`（根目录导航、列表内逐层展开、动画与减弱动画、键盘和层级归属）、`npm run test:sorting`（双向排序、最新30条范围、资料卡与留白）、`npm run test:ui`、`npm run test:import`、`node scripts/release-ui-test.cjs`，均使用隔离数据。原生更新器测试需指定只读旧版基线，见 [更新与发布](UPDATING.md)。
 
 ## 项目结构
 
 ```text
 src/                 主进程、业务与存储模块
   ui/                桌面界面
+  collection-view.js 根目录、直属内容和文件夹排序的列表模型
   updates.cjs        GitHub 更新与签名校验
 build/               NSIS 安装与原目录更新
 scripts/             构建、发布与桌面验证
@@ -58,3 +59,5 @@ docs/                演示图与发布说明
 ## 许可
 
 源码公开可见，暂未授予开源再分发或复用许可，见 [LICENSE](../LICENSE)。第三方组件遵循各自许可证。
+
+文件夹 `createdAt` 为兼容旧数据的可选字段：新建与新导入的文件夹由主进程记录添加时间，重命名保留原时间；旧数据不补写猜测时间，时间排序以原有插入顺序作为稳定回退。收藏 JSON 版本、目录 ID 与浏览器 HTML 结构不变。
